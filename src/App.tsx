@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Navbar } from './components/Navbar';
 import { StatsCards } from './components/StatsCards';
@@ -51,9 +51,6 @@ export default function App() {
   // Centralized employees list as single source of truth
   const [employees, setEmployees] = useState([
     { id: '101', name: 'Golam Maula Lincoln', role: 'Site Administrator', dept: 'HR & Admin', email: 'lincoln@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&h=256&fit=crop' },
-    { id: '102', name: 'Kazi Fahmid Hassan Rafi', role: 'System Developer', dept: 'IT Department', email: 'rafi@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=256&h=256&fit=crop' },
-    { id: '103', name: 'Prosunjit Roy', role: 'Senior Accountant', dept: 'Finance & Accounts', email: 'prosun@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=256&h=256&fit=crop' },
-    { id: '104', name: 'Samia Rahman', role: 'HR Executive', dept: 'HR & Admin', email: 'samia@touchandsolve.com', status: 'On Leave', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256&h=256&fit=crop' },
     { id: '105', name: 'Abul Kalam Azad', role: 'Chief Executive Officer', dept: 'Management', email: 'azad@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=256&h=256&fit=crop' },
     { id: '106', name: 'Firdoushe Sultana', role: 'Executive Vice President', dept: 'Management', email: 'firdoushe@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256&h=256&fit=crop' },
     { id: '107', name: 'Julia Akter Lipi', role: 'Finince Director', dept: 'Finance & Accounts', email: 'julia@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=256&h=256&fit=crop' },
@@ -80,6 +77,24 @@ export default function App() {
     { id: '128', name: 'Md Abdur Rahim', role: 'Peon', dept: 'Support Department', email: 'rahim@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=256&h=256&fit=crop' },
     { id: '129', name: 'Md. Labib Hasan', role: 'Office Assistant', dept: 'HR & Admin', email: 'labib.oa@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=256&h=256&fit=crop' },
   ]);
+
+  const sortedEmployees = useMemo(() => {
+    const getHierarchyWeight = (role: string) => {
+      const lowerRole = role.toLowerCase();
+      if (lowerRole.includes('chief executive officer') || lowerRole.includes('ceo')) return 1;
+      if (lowerRole.includes('executive vice president') || lowerRole.includes('evp')) return 2;
+      if (lowerRole.includes('director')) return 3;
+      if (lowerRole.includes('manager')) return 4;
+      if (lowerRole.includes('administrator') || lowerRole.includes('admin')) return 5;
+      if (lowerRole.includes('developer') || lowerRole.includes('engineer')) return 6;
+      if (lowerRole.includes('designer') || lowerRole.includes('trainer') || lowerRole.includes('teacher')) return 7;
+      if (lowerRole.includes('executive')) return 8;
+      if (lowerRole.includes('officer') || lowerRole.includes('assistant')) return 9;
+      if (lowerRole.includes('peon')) return 10;
+      return 100;
+    };
+    return [...employees].sort((a, b) => getHierarchyWeight(a.role || '') - getHierarchyWeight(b.role || ''));
+  }, [employees]);
 
 
 
@@ -361,9 +376,9 @@ export default function App() {
 
               {/* Auxiliary Widgets Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <RecentActivities employees={employees} />
-                <UpcomingLeaves employees={employees} />
-                <TodaysBirthdays onWishClick={handleBirthdayWish} employees={employees} />
+                <RecentActivities employees={sortedEmployees} />
+                <UpcomingLeaves employees={sortedEmployees} />
+                <TodaysBirthdays onWishClick={handleBirthdayWish} employees={sortedEmployees} />
                 <ShiftOverview />
                 <CalendarWidget />
                 <QuickActions onActionClick={handleQuickAction} />
@@ -371,17 +386,17 @@ export default function App() {
             </>
           )}
 
-          {(activeTab === 'attendance' || activeTab === 'attendance-list') && <AttendancePage showToast={showToast} employees={employees} />}
-          {activeTab === 'attendance-individual' && <IndividualReportPage showToast={showToast} employees={employees} />}
-          {activeTab === 'attendance-summary' && <SummaryReportPage showToast={showToast} employees={employees} />}
-          {activeTab === 'attendance-sheet' && <AttendanceSheetPage showToast={showToast} employees={employees} />}
-          {activeTab === 'attendance-request' && <RequestAttendancePage showToast={showToast} employees={employees} />}
+          {(activeTab === 'attendance' || activeTab === 'attendance-list') && <AttendancePage showToast={showToast} employees={sortedEmployees} />}
+          {activeTab === 'attendance-individual' && <IndividualReportPage showToast={showToast} employees={sortedEmployees} />}
+          {activeTab === 'attendance-summary' && <SummaryReportPage showToast={showToast} employees={sortedEmployees} />}
+          {activeTab === 'attendance-sheet' && <AttendanceSheetPage showToast={showToast} employees={sortedEmployees} />}
+          {activeTab === 'attendance-request' && <RequestAttendancePage showToast={showToast} employees={sortedEmployees} />}
           {activeTab === 'occupancy' && <OccupancyPage showToast={showToast} />}
           {activeTab === 'reports' && <ReportsPage showToast={showToast} />}
           {activeTab === 'employees' && (
             <EmployeesPage 
               showToast={showToast} 
-              employees={employees}
+              employees={sortedEmployees}
               setEmployees={setEmployees}
               externalSearchQuery={searchQuery}
               setExternalSearchQuery={setSearchQuery}
@@ -402,7 +417,7 @@ export default function App() {
         {/* Footer */}
         <footer className="py-6 text-center border-t border-slate-100 dark:border-slate-800/85 mt-auto">
           <p className="text-xs text-slate-400 dark:text-slate-550 font-medium">
-            &copy; 2026 Touch & Solve. All rights reserved.
+            &copy; 2026 <a href="https://touchandsolve.com" target="_blank" rel="noopener noreferrer" className="hover:underline text-indigo-500 font-bold">Touch & Solve</a>. All rights reserved.
           </p>
         </footer>
       </div>

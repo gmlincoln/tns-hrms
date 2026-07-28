@@ -9,14 +9,22 @@ interface LogoProps {
 export const TouchAndSolveLogo: React.FC<LogoProps> = ({ className = '', isCollapsed = false }) => {
   if (isCollapsed) {
     return (
-      <div className={`flex items-center justify-center ${className}`}>
+      <a 
+        href="#" 
+        className={`flex items-center justify-center ${className}`}
+        title="Go to Dashboard"
+      >
         <img src={logoImg} alt="Touch & Solve Logo" className="w-10 h-10 object-contain" />
-      </div>
+      </a>
     );
   }
 
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
+    <a 
+      href="#" 
+      className={`flex items-center gap-3 hover:opacity-90 transition-opacity ${className}`}
+      title="Go to Dashboard"
+    >
       <img src={logoImg} alt="Touch & Solve Logo" className="w-9 h-9 shrink-0 object-contain" />
 
       {/* Brand Text */}
@@ -28,7 +36,7 @@ export const TouchAndSolveLogo: React.FC<LogoProps> = ({ className = '', isColla
           WE SOLVE JUST IN TOUCH
         </span>
       </div>
-    </div>
+    </a>
   );
 };
 

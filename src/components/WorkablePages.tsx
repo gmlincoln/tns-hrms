@@ -34,7 +34,26 @@ export const AttendancePage: React.FC<WorkablePageProps> = ({ showToast, employe
     const locations = ['Dhaka HQ', 'Paribagh', 'Remote', 'Banani Branch'];
     const methods = ['Face', 'Fingerprint', 'RFID', 'GPS'];
     
-    return employees.map((emp, idx) => {
+    const getHierarchyWeight = (role: string) => {
+      const lowerRole = role.toLowerCase();
+      if (lowerRole.includes('chief executive officer') || lowerRole.includes('ceo')) return 1;
+      if (lowerRole.includes('executive vice president') || lowerRole.includes('evp')) return 2;
+      if (lowerRole.includes('director')) return 3;
+      if (lowerRole.includes('manager')) return 4;
+      if (lowerRole.includes('administrator') || lowerRole.includes('admin')) return 5;
+      if (lowerRole.includes('developer') || lowerRole.includes('engineer')) return 6;
+      if (lowerRole.includes('designer') || lowerRole.includes('trainer') || lowerRole.includes('teacher')) return 7;
+      if (lowerRole.includes('executive')) return 8;
+      if (lowerRole.includes('officer') || lowerRole.includes('assistant')) return 9;
+      if (lowerRole.includes('peon')) return 10;
+      return 100;
+    };
+
+    const sortedEmployees = [...employees].sort((a, b) => {
+      return getHierarchyWeight(a.role || '') - getHierarchyWeight(b.role || '');
+    });
+
+    return sortedEmployees.map((emp, idx) => {
       let status = 'On Time';
       let time = '08:45 AM';
       let method = methods[idx % methods.length];
@@ -65,6 +84,7 @@ export const AttendancePage: React.FC<WorkablePageProps> = ({ showToast, employe
         empId: emp.id,
         name: emp.name,
         dept: emp.dept || 'HR & Admin',
+        role: emp.role || 'Employee',
         time,
         status,
         method,
@@ -139,7 +159,7 @@ export const AttendancePage: React.FC<WorkablePageProps> = ({ showToast, employe
               <tr className="border-b border-slate-100 dark:border-slate-700/50 text-slate-400 pb-2 font-semibold">
                 <th className="py-3 px-2">Employee ID</th>
                 <th className="py-3 px-2">Name</th>
-                <th className="py-3 px-2">Department</th>
+                <th className="py-3 px-2">Designation</th>
                 <th className="py-3 px-2">Time</th>
                 <th className="py-3 px-2">Location</th>
                 <th className="py-3 px-2">Method</th>
@@ -156,7 +176,7 @@ export const AttendancePage: React.FC<WorkablePageProps> = ({ showToast, employe
                   <tr key={r.id} className="text-slate-700 dark:text-slate-350 hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
                     <td className="py-3 px-2 font-semibold">#{r.empId}</td>
                     <td className="py-3 px-2 font-bold">{r.name}</td>
-                    <td className="py-3 px-2">{r.dept}</td>
+                    <td className="py-3 px-2 font-semibold text-indigo-600 dark:text-indigo-400">{r.role}</td>
                     <td className="py-3 px-2 font-medium">{r.time}</td>
                     <td className="py-3 px-2">{r.loc}</td>
                     <td className="py-3 px-2">
@@ -1518,11 +1538,39 @@ export const SummaryReportPage: React.FC<WorkablePageProps> = ({ showToast }) =>
 /* ========================================================================== */
 export const AttendanceSheetPage: React.FC<WorkablePageProps> = ({ showToast, employees = [] }) => {
   const [selectedMonth, setSelectedMonth] = useState('2026-07');
-  const days = Array.from({ length: 15 }, (_, i) => i + 1); // Mock 15 days for horizontal space
+
+  const dateList = useMemo(() => {
+    if (!selectedMonth) return [];
+    const [yearStr, monthStr] = selectedMonth.split('-');
+    const year = parseInt(yearStr);
+    const month = parseInt(monthStr) - 1; 
+    
+    const numDays = new Date(year, month + 1, 0).getDate();
+    const result = [];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const monthNames = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    const monthName = monthNames[month];
+
+    for (let day = 1; day <= numDays; day++) {
+      const d = new Date(year, month, day);
+      const dayName = dayNames[d.getDay()];
+      result.push({
+        day,
+        dayName,
+        monthName,
+        isFriday: d.getDay() === 5
+      });
+    }
+    return result;
+  }, [selectedMonth]);
 
   const records = useMemo(() => {
     return employees.map((emp, idx) => {
-      const empStatus = Array.from({ length: 15 }, (_, dayIdx) => {
+      const empStatus = dateList.map((dt, dayIdx) => {
+        if (dt.isFriday) return 'Off';
         if (emp.status === 'On Leave') return 'V';
         if (emp.status === 'Inactive') return 'A';
         if ((dayIdx + idx) % 13 === 0) return 'A';
@@ -1531,12 +1579,13 @@ export const AttendanceSheetPage: React.FC<WorkablePageProps> = ({ showToast, em
         return 'P';
       });
       return {
+        id: emp.id,
         name: emp.name,
         dept: emp.dept || 'HR & Admin',
         status: empStatus
       };
     });
-  }, [employees]);
+  }, [employees, dateList]);
 
   return (
     <div className="space-y-6 font-manrope">
@@ -1565,35 +1614,66 @@ export const AttendanceSheetPage: React.FC<WorkablePageProps> = ({ showToast, em
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-rose-500 rounded flex items-center justify-center text-white text-[9px]">A</span> Absent</span>
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-amber-500 rounded flex items-center justify-center text-white text-[9px]">L</span> Late</span>
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-blue-500 rounded flex items-center justify-center text-white text-[9px]">V</span> Vacation</span>
+            <span className="flex items-center gap-1.5">
+              <span className="px-1.5 py-0.5 bg-rose-50 dark:bg-rose-950/30 text-rose-500 rounded border border-rose-100 dark:border-rose-900/50 text-[8px] font-black">OFF</span> Friday Off
+            </span>
           </div>
         </div>
 
         {/* Sheet Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border divide-y divide-slate-100 dark:divide-slate-750 dark:border-slate-700">
+        <div className="overflow-x-auto relative">
+          <table className="w-full text-left text-xs border border-collapse divide-y divide-slate-100 dark:divide-slate-750 dark:border-slate-700">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-900 text-slate-500">
-                <th className="py-2.5 px-3 font-semibold border-r dark:border-slate-700 min-w-[160px]">Employee Name</th>
-                {days.map(d => (
-                  <th key={d} className="py-2.5 px-1 text-center font-semibold border-r dark:border-slate-700 w-8">{d}</th>
+              <tr className="bg-slate-50 dark:bg-slate-900 text-slate-500 text-[10px] uppercase">
+                <th className="py-2.5 px-3 font-semibold border-r dark:border-slate-700 min-w-[180px] align-middle text-slate-600 dark:text-slate-300 sticky left-0 bg-slate-50 dark:bg-slate-900 z-20">
+                  Employee Details
+                </th>
+                {dateList.map((dt) => (
+                  <th 
+                    key={dt.day} 
+                    className={`py-2 px-1 text-center font-bold border-r dark:border-slate-700 w-12 min-w-[44px] ${
+                      dt.isFriday ? 'bg-rose-50/50 dark:bg-rose-950/15 text-rose-500' : ''
+                    }`}
+                  >
+                    <div className="text-[9px] font-medium text-slate-400 dark:text-slate-555 leading-none">{dt.monthName}</div>
+                    <div className="text-xs font-black my-0.5 leading-none">{String(dt.day).padStart(2, '0')}</div>
+                    <div className="text-[9px] font-bold text-indigo-500 dark:text-indigo-400 leading-none">{dt.dayName}</div>
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-750">
               {records.map((r, idx) => (
                 <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10 text-slate-700 dark:text-slate-300">
-                  <td className="py-3 px-3 border-r dark:border-slate-700 font-bold">{r.name}</td>
-                  {r.status.map((st, i) => (
-                    <td key={i} className="py-3 px-1 text-center border-r dark:border-slate-700">
-                      <span className={`inline-block w-5 h-5 rounded text-[10px] font-black leading-5 text-white ${
-                        st === 'P' ? 'bg-emerald-500' :
-                        st === 'A' ? 'bg-rose-500' :
-                        st === 'L' ? 'bg-amber-500' : 'bg-blue-500'
-                      }`}>
-                        {st}
-                      </span>
-                    </td>
-                  ))}
+                  <td className="py-2.5 px-3 border-r dark:border-slate-700 sticky left-0 bg-white dark:bg-slate-800 z-10 whitespace-nowrap shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                    <div className="font-bold text-slate-800 dark:text-slate-200">{r.name}</div>
+                    <div className="text-[9px] text-indigo-500 font-semibold mt-0.5">#{r.id}</div>
+                  </td>
+                  {r.status.map((st, i) => {
+                    const dt = dateList[i];
+                    return (
+                      <td 
+                        key={i} 
+                        className={`py-2 px-1 text-center border-r dark:border-slate-700 ${
+                          dt?.isFriday ? 'bg-rose-50/20 dark:bg-rose-950/5' : ''
+                        }`}
+                      >
+                        {st === 'Off' ? (
+                          <span className="inline-block text-[9px] font-black uppercase text-rose-500 bg-rose-50 dark:bg-rose-950/30 px-1.5 py-0.5 rounded leading-none border border-rose-100 dark:border-rose-900/50">
+                            Off
+                          </span>
+                        ) : (
+                          <span className={`inline-block w-5 h-5 rounded text-[10px] font-black leading-5 text-white ${
+                            st === 'P' ? 'bg-emerald-500' :
+                            st === 'A' ? 'bg-rose-500' :
+                            st === 'L' ? 'bg-amber-500' : 'bg-blue-500'
+                          }`}>
+                            {st}
+                          </span>
+                        )}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
