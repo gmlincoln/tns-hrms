@@ -4,13 +4,15 @@ import logoImg from '../assets/logo.png';
 interface LogoProps {
   className?: string;
   isCollapsed?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
-export const TouchAndSolveLogo: React.FC<LogoProps> = ({ className = '', isCollapsed = false }) => {
+export const TouchAndSolveLogo: React.FC<LogoProps> = ({ className = '', isCollapsed = false, onClick }) => {
   if (isCollapsed) {
     return (
       <a 
-        href="#" 
+        href="/" 
+        onClick={onClick}
         className={`flex items-center justify-center ${className}`}
         title="Go to Dashboard"
       >
@@ -21,7 +23,8 @@ export const TouchAndSolveLogo: React.FC<LogoProps> = ({ className = '', isColla
 
   return (
     <a 
-      href="#" 
+      href="/" 
+      onClick={onClick}
       className={`flex items-center gap-3 hover:opacity-90 transition-opacity ${className}`}
       title="Go to Dashboard"
     >

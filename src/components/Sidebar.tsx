@@ -21,11 +21,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setIsCollapsed,
 }) => {
   const [isAttendanceOpen, setIsAttendanceOpen] = useState(() => activeTab.startsWith('attendance'));
+  const [isEmployeeOpen, setIsEmployeeOpen] = useState(() => activeTab === 'employees' || activeTab.startsWith('employee-'));
 
-  // Expand if active tab switches to an attendance sub-tab externally
   useEffect(() => {
     if (activeTab.startsWith('attendance')) {
       setIsAttendanceOpen(true);
+    }
+    if (activeTab === 'employees' || activeTab.startsWith('employee-')) {
+      setIsEmployeeOpen(true);
     }
   }, [activeTab]);
 
@@ -45,7 +48,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     { id: 'occupancy', name: 'Occupancy', icon: Users },
     { id: 'reports', name: 'Reports', icon: BarChart3 },
-    { id: 'employees', name: 'Employees', icon: UserCheck },
+    { 
+      id: 'employees', 
+      name: 'Employee', 
+      icon: UserCheck,
+      subItems: [
+        { id: 'employee-create', name: 'Create Employee' },
+        { id: 'employees', name: 'List of Employee' },
+        { id: 'employee-chart', name: 'Employee Chart' }
+      ]
+    },
     { id: 'shift-management', name: 'Shift Management', icon: CalendarDays },
     { id: 'leave', name: 'Leave', icon: CalendarX },
     { id: 'overtime', name: 'Overtime', icon: Clock },
@@ -64,7 +76,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     >
       {/* Brand Header */}
       <div className="p-5 flex items-center justify-between border-b border-[#2d2854] h-18">
-        <TouchAndSolveLogo isCollapsed={isCollapsed} />
+        <TouchAndSolveLogo 
+          isCollapsed={isCollapsed} 
+          onClick={(e) => {
+            e.preventDefault();
+            setActiveTab('dashboard');
+            window.history.pushState(null, '', '/');
+          }}
+        />
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)}
           className={`p-1.5 rounded-lg bg-[#2d2854] hover:bg-indigo-600 text-white transition-colors duration-200 ${isCollapsed ? 'mx-auto mt-2' : ''}`}
@@ -79,22 +98,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
           const Icon = item.icon;
           
           if (item.subItems) {
-            const isSubItemActive = item.subItems.some(sub => sub.id === activeTab) || activeTab === 'attendance';
+            const isAttendance = item.id === 'attendance';
+            const isEmployee = item.id === 'employees';
+            
+            const isOpen = isAttendance ? isAttendanceOpen : isEmployee ? isEmployeeOpen : false;
+            const setIsOpen = isAttendance ? setIsAttendanceOpen : isEmployee ? setIsEmployeeOpen : () => {};
+            
+            const isSubItemActive = item.subItems.some(sub => sub.id === activeTab) || activeTab === item.id;
             return (
               <div key={item.id} className="space-y-1">
                 <button
                   onClick={() => {
                     if (isCollapsed) {
                       setIsCollapsed(false);
-                      setIsAttendanceOpen(true);
+                      setIsOpen(true);
                     } else {
-                      setIsAttendanceOpen(!isAttendanceOpen);
+                      setIsOpen(!isOpen);
                     }
                   }}
                   className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl transition-all duration-200 text-left font-medium text-sm group relative ${
-                    isSubItemActive && !isAttendanceOpen
+                    isSubItemActive && !isOpen
                       ? 'bg-indigo-650/40 text-white border border-indigo-500/25'
-                      : isAttendanceOpen && isSubItemActive
+                      : isOpen && isSubItemActive
                       ? 'bg-[#8B5CF6] text-white shadow-lg shadow-purple-600/30'
                       : 'hover:bg-[#2d2854] hover:text-white text-slate-400'
                   }`}
@@ -106,7 +131,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     )}
                   </div>
                   {!isCollapsed && (
-                    isAttendanceOpen ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />
+                    isOpen ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />
                   )}
                   {isCollapsed && (
                     <div className="absolute left-full ml-3 px-2 py-1 bg-slate-950 text-white text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-md">
@@ -116,7 +141,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
 
                 {/* Submenu Items */}
-                {isAttendanceOpen && !isCollapsed && (
+                {isOpen && !isCollapsed && (
                   <div className="pl-6 space-y-1 animate-in fade-in slide-in-from-top-1 duration-150">
                     {item.subItems.map(sub => {
                       const isSubActive = activeTab === sub.id;

@@ -11,6 +11,7 @@ interface WorkablePageProps {
   setExternalSearchQuery?: (val: string) => void;
   employees?: any[];
   setEmployees?: React.Dispatch<React.SetStateAction<any[]>>;
+  initialShowAddForm?: boolean;
 }
 
 
@@ -350,10 +351,11 @@ export const EmployeesPage: React.FC<WorkablePageProps> = ({
   externalSearchQuery = '', 
   setExternalSearchQuery,
   employees: propEmployees,
-  setEmployees: propSetEmployees
+  setEmployees: propSetEmployees,
+  initialShowAddForm = false
 }) => {
   const [search, setSearch] = useState('');
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(initialShowAddForm);
 
   // Sync local search and external search
   const activeSearch = setExternalSearchQuery ? externalSearchQuery : search;
@@ -1777,6 +1779,720 @@ export const RequestAttendancePage: React.FC<WorkablePageProps> = ({ showToast }
           </button>
         </form>
       </div>
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                          18. EMPLOYEE ORG CHART                            */
+/* ========================================================================== */
+export const EmployeeChartPage: React.FC<WorkablePageProps> = ({ employees = [] }) => {
+  return (
+    <div className="space-y-6 font-manrope">
+      <div className="w-full bg-[#8B5CF6] text-white text-center py-3.5 px-6 rounded-2xl font-bold text-sm tracking-wide shadow-sm">
+        Employee Organization Chart
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-6 shadow-sm space-y-6 overflow-x-auto">
+        <div className="min-w-[800px] flex flex-col items-center py-4">
+          {/* CEO Node */}
+          {employees.filter(e => e.role.toLowerCase().includes('chief executive') || e.role.toLowerCase().includes('ceo')).map(ceo => (
+            <div key={ceo.id} className="flex flex-col items-center">
+              <div className="bg-indigo-50 dark:bg-indigo-950/40 border-2 border-indigo-500 rounded-2xl p-4 text-center w-56 shadow-sm flex flex-col items-center">
+                <img src={ceo.avatar} className="w-12 h-12 rounded-full object-cover border-2 border-indigo-400 mb-2" alt={ceo.name} />
+                <h4 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 leading-tight">{ceo.name}</h4>
+                <p className="text-[10px] font-bold text-indigo-500 mt-1 uppercase tracking-wider">{ceo.role}</p>
+                <p className="text-[9px] text-slate-400 mt-0.5">{ceo.dept}</p>
+              </div>
+              
+              <div className="h-8 w-0.5 bg-slate-200 dark:bg-slate-700 my-1"></div>
+            </div>
+          ))}
+
+          {/* EVP and Directors level */}
+          <div className="flex gap-8 justify-center relative">
+            {employees.filter(e => e.role.toLowerCase().includes('vice president') || e.role.toLowerCase().includes('director')).map(mgr => (
+              <div key={mgr.id} className="flex flex-col items-center">
+                <div className="bg-purple-50 dark:bg-purple-950/40 border-2 border-purple-500 rounded-2xl p-4 text-center w-52 shadow-sm flex flex-col items-center">
+                  <img src={mgr.avatar} className="w-12 h-12 rounded-full object-cover border-2 border-purple-400 mb-2" alt={mgr.name} />
+                  <h4 className="font-extrabold text-xs text-slate-800 dark:text-slate-200 leading-tight">{mgr.name}</h4>
+                  <p className="text-[9px] font-bold text-purple-500 mt-1 uppercase tracking-wider">{mgr.role}</p>
+                  <p className="text-[9px] text-slate-400 mt-0.5">{mgr.dept}</p>
+                </div>
+                <div className="h-6 w-0.5 bg-slate-200 dark:bg-slate-700 my-1"></div>
+              </div>
+            ))}
+          </div>
+
+          <div className="w-4/5 h-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div>
+
+          {/* Engineering Manager Level */}
+          <div className="flex gap-8 justify-center relative">
+            {employees.filter(e => e.role.toLowerCase() === 'engineering manager').map(mgr => (
+              <div key={mgr.id} className="flex flex-col items-center">
+                <div className="bg-emerald-50 dark:bg-emerald-950/20 border-2 border-emerald-500 rounded-2xl p-4 text-center w-52 shadow-sm flex flex-col items-center">
+                  <img src={mgr.avatar} className="w-12 h-12 rounded-full object-cover border-2 border-emerald-400 mb-2" alt={mgr.name} />
+                  <h4 className="font-extrabold text-xs text-slate-800 dark:text-slate-200 leading-tight">{mgr.name}</h4>
+                  <p className="text-[9px] font-bold text-emerald-500 mt-1 uppercase tracking-wider">{mgr.role}</p>
+                  <p className="text-[9px] text-slate-400 mt-0.5">{mgr.dept}</p>
+                </div>
+                <div className="h-6 w-0.5 bg-slate-200 dark:bg-slate-700 my-1"></div>
+              </div>
+            ))}
+          </div>
+
+          <div className="w-4/5 h-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div>
+
+          {/* Asst Managers Level */}
+          <div className="flex flex-wrap gap-6 justify-center mt-2">
+            {employees.filter(e => e.role.toLowerCase().includes('asst manager') || e.role.toLowerCase().includes('assistant manager')).map(mgr => (
+              <div key={mgr.id} className="bg-amber-50 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-700/60 rounded-xl p-3 text-center w-44 shadow-xs flex flex-col items-center">
+                <img src={mgr.avatar} className="w-10 h-10 rounded-full object-cover mb-1.5" alt={mgr.name} />
+                <h5 className="font-extrabold text-[11px] text-slate-800 dark:text-slate-200 leading-tight">{mgr.name}</h5>
+                <p className="text-[9px] font-bold text-amber-600 dark:text-amber-400 mt-0.5 uppercase tracking-wider">{mgr.role}</p>
+                <p className="text-[8px] text-slate-450 mt-0.5">{mgr.dept}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Rest of Team Directory */}
+          <div className="mt-8 w-full border-t border-slate-100 dark:border-slate-750 pt-6">
+            <h3 className="text-center text-xs font-bold text-slate-400 uppercase tracking-wider mb-6">Staff & Associates</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {employees.filter(e => 
+                !e.role.toLowerCase().includes('chief executive') && 
+                !e.role.toLowerCase().includes('ceo') && 
+                !e.role.toLowerCase().includes('vice president') && 
+                !e.role.toLowerCase().includes('director') && 
+                !e.role.toLowerCase().includes('manager')
+              ).map(emp => (
+                <div key={emp.id} className="bg-slate-50 dark:bg-slate-900/30 border border-slate-150 dark:border-slate-750 rounded-xl p-3 text-center flex flex-col items-center">
+                  <img src={emp.avatar} className="w-8 h-8 rounded-full object-cover mb-1.5" alt={emp.name} />
+                  <h6 className="font-bold text-[10px] text-slate-700 dark:text-slate-300 line-clamp-1 leading-tight">{emp.name}</h6>
+                  <p className="text-[8.5px] font-bold text-slate-550 mt-0.5 truncate max-w-full">{emp.role || 'Associate'}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                         19. CREATE EMPLOYEE PAGE                           */
+/* ========================================================================== */
+interface CreateEmployeeProps extends WorkablePageProps {
+  setActiveTab?: (tab: string) => void;
+}
+
+export const CreateEmployeePage: React.FC<CreateEmployeeProps> = ({ 
+  showToast, 
+  employees = [], 
+  setEmployees,
+  setActiveTab
+}) => {
+  const [empName, setEmpName] = useState('');
+  const [workEmail, setWorkEmail] = useState('');
+  const [workPhone, setWorkPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [status, setStatus] = useState('Active');
+  
+  const [empId, setEmpId] = useState('');
+  const [department, setDepartment] = useState('');
+  const [jobPosition, setJobPosition] = useState('');
+  const [manager, setManager] = useState('');
+
+  // Image Upload Preview State
+  const [photoPreview, setPhotoPreview] = useState<string>('');
+
+  // Opening Info
+  const [openingBalance, setOpeningBalance] = useState('');
+  const openingBalanceDate = '01/01/2022'; 
+
+  // Private Info
+  const [division, setDivision] = useState('');
+  const [district, setDistrict] = useState('');
+  const [upazila, setUpazila] = useState('');
+  const [privateEmail, setPrivateEmail] = useState('');
+  const [privatePhone, setPrivatePhone] = useState('');
+  const [bankAccount, setBankAccount] = useState('');
+  const [distance, setDistance] = useState('');
+
+  // NID Upload State
+  const [nidFileName, setNidFileName] = useState<string>('');
+  const [nidPreviewUrl, setNidPreviewUrl] = useState<string>('');
+
+  // Emergency
+  const [emergencyName, setEmergencyName] = useState('');
+  const [emergencyPhone, setEmergencyPhone] = useState('');
+
+  // Family Status
+  const [maritalStatus, setMaritalStatus] = useState('Single');
+  const [childrenNumber, setChildrenNumber] = useState('');
+
+  // Citizenship
+  const [nationality, setNationality] = useState('');
+  const [identNo, setIdentNo] = useState('');
+  const [passportNo, setPassportNo] = useState('');
+  const [gender, setGender] = useState('');
+  const [dob, setDob] = useState('');
+
+  // Education
+  const [certLevel, setCertLevel] = useState('');
+  const [fieldOfStudy, setFieldOfStudy] = useState('');
+  const [college, setCollege] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!empName || !workEmail || !empId) {
+      showToast('Please fill in Employee Name, Work Email, and Employee ID.', 'warning');
+      return;
+    }
+
+    const newEmp = {
+      id: empId,
+      name: empName,
+      role: jobPosition || 'Employee',
+      dept: department || 'HR & Admin',
+      email: workEmail,
+      status: status,
+      avatar: photoPreview || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256&h=256&fit=crop'
+    };
+
+    if (setEmployees) {
+      setEmployees([...employees, newEmp]);
+    }
+    
+    showToast(`Employee "${empName}" created successfully!`, 'success');
+    if (setActiveTab) {
+      setActiveTab('employees');
+    }
+  };
+
+  return (
+    <div className="space-y-6 font-manrope max-w-[1200px] mx-auto pb-12 text-left">
+      {/* Top Banner Row */}
+      <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+        <button type="button" className="px-5 py-2.5 bg-purple-700 hover:bg-purple-800 text-white rounded-xl text-xs font-black shadow-sm transition-all">
+          New Employees
+        </button>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-205 dark:border-slate-700 rounded-xl shadow-xs">
+            <FileSpreadsheet size={16} className="text-purple-600" />
+            <div className="text-[10px] text-left">
+              <span className="block font-bold text-slate-750 dark:text-slate-250">Documents</span>
+              <span className="block font-extrabold text-purple-700 -mt-0.5">
+                {nidFileName ? '1' : '0'}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-205 dark:border-slate-700 rounded-xl shadow-xs">
+            <Mail size={16} className="text-purple-600" />
+            <div className="text-[10px] text-left">
+              <span className="block font-bold text-slate-755 dark:text-slate-250">Contacts</span>
+              <span className="block font-extrabold text-purple-700 -mt-0.5">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-3xl p-6 shadow-md space-y-8">
+        
+        {/* Main Details Section */}
+        <div className="relative grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-3 space-y-5">
+            {/* Name Input */}
+            <div className="space-y-1">
+              <input 
+                type="text" 
+                placeholder="Employees's Name"
+                value={empName}
+                onChange={e => setEmpName(e.target.value)}
+                className="w-full text-2xl md:text-3xl font-extrabold text-slate-800 dark:text-white border-b-2 border-slate-100 dark:border-slate-700 focus:border-indigo-500 focus:outline-none bg-transparent pb-2 font-manrope placeholder:text-slate-300 dark:placeholder:text-slate-650"
+                required
+              />
+            </div>
+
+            {/* Left and Right Field Columns */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Left Column */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 items-center gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Work Email</label>
+                  <input 
+                    type="email" 
+                    placeholder="Work Email" 
+                    value={workEmail}
+                    onChange={e => setWorkEmail(e.target.value)}
+                    className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-205 font-semibold"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-3 items-center gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Work Phone</label>
+                  <input 
+                    type="text" 
+                    placeholder="Work Phone" 
+                    value={workPhone}
+                    onChange={e => setWorkPhone(e.target.value)}
+                    className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-205 font-semibold"
+                  />
+                </div>
+                <div className="grid grid-cols-3 items-center gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Password</label>
+                  <input 
+                    type="password" 
+                    placeholder="Enter password" 
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-205 font-semibold"
+                  />
+                </div>
+                <div className="grid grid-cols-3 items-center gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Status</label>
+                  <select 
+                    value={status}
+                    onChange={e => setStatus(e.target.value)}
+                    className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-205 font-semibold cursor-pointer"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="On Leave">On Leave</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Right Column */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 items-center gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Employee ID</label>
+                  <input 
+                    type="text" 
+                    placeholder="Enter Employee ID" 
+                    value={empId}
+                    onChange={e => setEmpId(e.target.value)}
+                    className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-205 font-semibold"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-3 items-center gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Department</label>
+                  <input 
+                    type="text" 
+                    placeholder="Enter Department" 
+                    value={department}
+                    onChange={e => setDepartment(e.target.value)}
+                    className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-205 font-semibold"
+                  />
+                </div>
+                <div className="grid grid-cols-3 items-center gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Job Position</label>
+                  <input 
+                    type="text" 
+                    placeholder="Enter job position" 
+                    value={jobPosition}
+                    onChange={e => setJobPosition(e.target.value)}
+                    className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-205 font-semibold"
+                  />
+                </div>
+                <div className="grid grid-cols-3 items-center gap-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Manager</label>
+                  <select 
+                    value={manager}
+                    onChange={e => setManager(e.target.value)}
+                    className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-205 font-semibold cursor-pointer"
+                  >
+                    <option value="">-- Choose a manager --</option>
+                    {employees.filter(e => e.role.toLowerCase().includes('manager') || e.role.toLowerCase().includes('ceo') || e.role.toLowerCase().includes('director')).map(mgr => (
+                      <option key={mgr.id} value={mgr.name}>{mgr.name} ({mgr.role})</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Photo Box Top Right - Workable Picture Upload */}
+          <div className="flex flex-col items-center justify-start pt-4 lg:col-span-1">
+            <label className="w-28 h-28 bg-slate-50 dark:bg-slate-900 border border-dashed border-slate-350 dark:border-slate-700 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all group relative overflow-hidden">
+              {photoPreview ? (
+                <img src={photoPreview} className="w-full h-full object-cover rounded-2xl" alt="Roster Photo" />
+              ) : (
+                <>
+                  <Camera size={28} className="text-slate-400 group-hover:scale-105 transition-transform" />
+                  <div className="absolute bottom-2 right-2 bg-indigo-600 text-white rounded-full p-0.5 shadow">
+                    <Plus size={12} />
+                  </div>
+                </>
+              )}
+              <input 
+                type="file" 
+                accept="image/*" 
+                className="hidden" 
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      if (event.target?.result) {
+                        setPhotoPreview(event.target.result as string);
+                        showToast(`Profile picture "${file.name}" loaded successfully!`, 'success');
+                      }
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+            </label>
+            <span className="text-[10px] text-slate-400 font-bold mt-2 uppercase tracking-wide">Upload Photo</span>
+          </div>
+        </div>
+
+        {/* Opening Information Section */}
+        <div className="border-t border-slate-100 dark:border-slate-750 pt-5 space-y-4">
+          <h3 className="text-sm font-extrabold text-slate-850 dark:text-slate-200">Opening Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-1.5 text-left">
+              <label className="text-xs font-bold text-slate-500 uppercase">Opening Balance <span className="text-[10px] text-slate-400 font-medium">(optional)</span></label>
+              <input 
+                type="text" 
+                placeholder="Opening Balance" 
+                value={openingBalance}
+                onChange={e => setOpeningBalance(e.target.value)}
+                className="w-full px-3 py-2.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-202 font-semibold"
+              />
+            </div>
+            <div className="space-y-1.5 text-left">
+              <label className="text-xs font-bold text-slate-500 uppercase">Opening Balance Date <span className="text-[10px] text-rose-500 font-medium">(readonly)</span></label>
+              <input 
+                type="text" 
+                readOnly
+                value={openingBalanceDate}
+                className="w-full px-3 py-2.5 text-xs bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-750 rounded-xl cursor-not-allowed text-slate-400 font-bold"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Private Information Section */}
+        <div className="border-t border-slate-100 dark:border-slate-750 pt-5 space-y-6">
+          <div className="border-b border-slate-150 dark:border-slate-750 pb-2">
+            <span className="text-xs font-extrabold text-purple-700 border-b-2 border-purple-600 pb-2 px-1 tracking-wider uppercase">
+              Private Information
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 text-left">
+            {/* Left Box */}
+            <div className="space-y-6">
+              {/* Private Contact */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b dark:border-slate-700 pb-1">Private Contact</h4>
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Private Address</label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter private address..." 
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-202 font-medium"
+                    />
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      <select 
+                        value={division} 
+                        onChange={e => setDivision(e.target.value)} 
+                        className="px-2 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none dark:text-slate-350 cursor-pointer"
+                      >
+                        <option value="">Division</option>
+                        <option value="Dhaka">Dhaka</option>
+                        <option value="Chattogram">Chattogram</option>
+                        <option value="Sylhet">Sylhet</option>
+                      </select>
+                      <select 
+                        value={district} 
+                        onChange={e => setDistrict(e.target.value)} 
+                        className="px-2 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none dark:text-slate-350 cursor-pointer"
+                      >
+                        <option value="">District</option>
+                        <option value="Dhaka">Dhaka</option>
+                        <option value="Feni">Feni</option>
+                        <option value="Sylhet">Sylhet</option>
+                      </select>
+                      <select 
+                        value={upazila} 
+                        onChange={e => setUpazila(e.target.value)} 
+                        className="px-2 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none dark:text-slate-350 cursor-pointer"
+                      >
+                        <option value="">Upazila</option>
+                        <option value="Tejgaon">Tejgaon</option>
+                        <option value="Mirpur">Mirpur</option>
+                        <option value="Fulgazi">Fulgazi</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Private Email</label>
+                    <input 
+                      type="email" 
+                      placeholder="e.g. myprivateemail@gmail.com" 
+                      value={privateEmail}
+                      onChange={e => setPrivateEmail(e.target.value)}
+                      className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-202 font-medium"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Private Phone</label>
+                    <input 
+                      type="text" 
+                      placeholder="Private Phone" 
+                      value={privatePhone}
+                      onChange={e => setPrivatePhone(e.target.value)}
+                      className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-202 font-medium"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Bank Account ?</label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter Account Number" 
+                      value={bankAccount}
+                      onChange={e => setBankAccount(e.target.value)}
+                      className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-202 font-medium"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Home-Work Distance</label>
+                    <div className="col-span-2 flex gap-2">
+                      <input 
+                        type="text" 
+                        placeholder="Distance" 
+                        value={distance}
+                        onChange={e => setDistance(e.target.value)}
+                        className="flex-1 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-202 font-medium"
+                      />
+                      <select className="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-355 cursor-pointer">
+                        <option value="km">km</option>
+                        <option value="miles">miles</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Emergency */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b dark:border-slate-700 pb-1">Emergency</h4>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Contact Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="Contact Name" 
+                      value={emergencyName}
+                      onChange={e => setEmergencyName(e.target.value)}
+                      className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-202 font-medium"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Contact Phone</label>
+                    <input 
+                      type="text" 
+                      placeholder="Contact Phone" 
+                      value={emergencyPhone}
+                      onChange={e => setEmergencyPhone(e.target.value)}
+                      className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-202 font-medium"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Family Status */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b dark:border-slate-700 pb-1">Family Status</h4>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Marital Status</label>
+                    <select 
+                      value={maritalStatus} 
+                      onChange={e => setMaritalStatus(e.target.value)}
+                      className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-350 cursor-pointer font-semibold"
+                    >
+                      <option value="Single">Single</option>
+                      <option value="Married">Married</option>
+                      <option value="Divorced">Divorced</option>
+                      <option value="Widowed">Widowed</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Children Number</label>
+                    <input 
+                      type="number" 
+                      placeholder="Number of Dependent Children" 
+                      value={childrenNumber}
+                      onChange={e => setChildrenNumber(e.target.value)}
+                      className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-202 font-medium"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Box */}
+            <div className="space-y-6">
+              {/* Citizenship */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b dark:border-slate-700 pb-1">Citizenship</h4>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Nationality</label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter Country Name" 
+                      value={nationality}
+                      onChange={e => setNationality(e.target.value)}
+                      className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-202 font-medium"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Identification No</label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter Identification No" 
+                      value={identNo}
+                      onChange={e => setIdentNo(e.target.value)}
+                      className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-202 font-medium"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Passport No</label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter passport No" 
+                      value={passportNo}
+                      onChange={e => setPassportNo(e.target.value)}
+                      className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-202 font-medium"
+                    />
+                  </div>
+
+                  {/* NID DOCUMENT UPLOAD OPTION */}
+                  <div className="grid grid-cols-3 items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">NID Document</label>
+                    <div className="col-span-2">
+                      <label className="flex items-center justify-center gap-2 px-3 py-2 bg-slate-55 dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <Plus size={14} className="text-slate-450" />
+                        <span className="text-[11px] font-bold text-slate-550 dark:text-slate-400 truncate max-w-[150px]">
+                          {nidFileName || 'Upload NID File'}
+                        </span>
+                        <input 
+                          type="file" 
+                          accept="image/*,application/pdf" 
+                          className="hidden" 
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setNidFileName(file.name);
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                if (event.target?.result) {
+                                  setNidPreviewUrl(event.target.result as string);
+                                }
+                              };
+                              reader.readAsDataURL(file);
+                              showToast(`NID Document "${file.name}" uploaded successfully!`, 'success');
+                            }
+                          }}
+                        />
+                      </label>
+                      {nidPreviewUrl && (
+                        <div className="mt-2 text-[10px] text-indigo-500 font-bold flex items-center gap-1">
+                          <span>✓ Verified NID: {nidFileName}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Gender</label>
+                    <select 
+                      value={gender} 
+                      onChange={e => setGender(e.target.value)}
+                      className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-350 cursor-pointer font-semibold"
+                    >
+                      <option value="">Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Date of Birth</label>
+                    <input 
+                      type="date" 
+                      value={dob}
+                      onChange={e => setDob(e.target.value)}
+                      className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-202 font-semibold cursor-pointer"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Education */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b dark:border-slate-700 pb-1">Education</h4>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Certificate Level</label>
+                    <select 
+                      value={certLevel} 
+                      onChange={e => setCertLevel(e.target.value)}
+                      className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-350 cursor-pointer font-semibold"
+                    >
+                      <option value="">Certificate Level</option>
+                      <option value="High School">High School</option>
+                      <option value="Bachelor">Bachelor Degree</option>
+                      <option value="Master">Master Degree</option>
+                      <option value="PhD">PhD / Doctorate</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">Field of Study</label>
+                    <input 
+                      type="text" 
+                      placeholder="Field of Study" 
+                      value={fieldOfStudy}
+                      onChange={e => setFieldOfStudy(e.target.value)}
+                      className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-202 font-medium"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase">College/University</label>
+                    <input 
+                      type="text" 
+                      placeholder="College/University" 
+                      value={college}
+                      onChange={e => setCollege(e.target.value)}
+                      className="col-span-2 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-202 font-medium"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="pt-6 flex justify-end">
+                <button
+                  type="submit"
+                  className="px-8 py-3 bg-purple-700 hover:bg-purple-800 text-white rounded-xl text-xs font-black shadow-md hover:scale-[1.01] transition-all tracking-wider uppercase"
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </form>
     </div>
   );
 };

@@ -18,7 +18,8 @@ import {
   ShiftManagementPage, LeavePage, OvertimePage, DevicesPage,
   SettingsPage, ProjectManagementPage, VisitorManagementPage,
   ParkingManagementPage, ProfilePage,
-  IndividualReportPage, SummaryReportPage, AttendanceSheetPage, RequestAttendancePage
+  IndividualReportPage, SummaryReportPage, AttendanceSheetPage, RequestAttendancePage,
+  EmployeeChartPage, CreateEmployeePage
 } from './components/WorkablePages';
 import { LoginPage } from './components/LoginPage';
 
@@ -34,8 +35,9 @@ export default function App() {
     const validTabs = [
       'dashboard', 'attendance', 'attendance-list', 'attendance-individual', 
       'attendance-summary', 'attendance-sheet', 'attendance-request', 'occupancy', 
-      'reports', 'employees', 'shift-management', 'leave', 'overtime', 'devices', 
-      'settings', 'profile', 'project-management', 'visitor-management', 'parking-management'
+      'reports', 'employees', 'employee-create', 'employee-chart', 'shift-management',
+      'leave', 'overtime', 'devices', 'settings', 'profile', 'project-management',
+      'visitor-management', 'parking-management'
     ];
     return validTabs.includes(hash) ? hash : 'dashboard';
   });
@@ -64,7 +66,7 @@ export default function App() {
     { id: '115', name: 'Md. Abdullah Al Mahfuz', role: 'App Developer', dept: 'Software Department', email: 'mahfuz@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=256&h=256&fit=crop' },
     { id: '116', name: 'Ashraful Anam Alve', role: 'Developer', dept: 'Software Department', email: 'alve@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=256&h=256&fit=crop' },
     { id: '117', name: 'Kamrul Islam Niloy', role: 'Developer', dept: 'Software Department', email: 'niloy@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=256&h=256&fit=crop' },
-    { id: '118', name: 'Abu Shahadat Md Tanvir', role: 'Support Engineer', dept: 'Support Department', email: 'tanvir@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1489980508314-941910ded1f4?q=80&w=256&h=256&fit=crop' },
+    { id: '118', name: 'Abu Shahadat Md Tanvir', role: 'Support Engineer', dept: 'Support Department', email: 'tanvir@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=256&h=256&fit=crop' },
     { id: '119', name: 'MD Faruk Hosen', role: 'Support Engineers', dept: 'Support Department', email: 'faruk@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1513956589380-bad6acb9b9d4?q=80&w=256&h=256&fit=crop' },
     { id: '120', name: 'Md Shariul Islam Sagar', role: 'Teacher', dept: 'Education', email: 'sagar@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?q=80&w=256&h=256&fit=crop' },
     { id: '121', name: 'Monirul Islam', role: 'Teacher', dept: 'Education', email: 'monirul@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=256&h=256&fit=crop' },
@@ -84,13 +86,15 @@ export default function App() {
       if (lowerRole.includes('chief executive officer') || lowerRole.includes('ceo')) return 1;
       if (lowerRole.includes('executive vice president') || lowerRole.includes('evp')) return 2;
       if (lowerRole.includes('director')) return 3;
-      if (lowerRole.includes('manager')) return 4;
-      if (lowerRole.includes('administrator') || lowerRole.includes('admin')) return 5;
-      if (lowerRole.includes('developer') || lowerRole.includes('engineer')) return 6;
-      if (lowerRole.includes('designer') || lowerRole.includes('trainer') || lowerRole.includes('teacher')) return 7;
-      if (lowerRole.includes('executive')) return 8;
-      if (lowerRole.includes('officer') || lowerRole.includes('assistant')) return 9;
-      if (lowerRole.includes('peon')) return 10;
+      if (lowerRole === 'engineering manager') return 4;
+      if (lowerRole.includes('asst manager') || lowerRole.includes('assistant manager')) return 5;
+      if (lowerRole.includes('manager')) return 6; 
+      if (lowerRole.includes('administrator') || lowerRole.includes('admin')) return 7;
+      if (lowerRole.includes('developer') || lowerRole.includes('engineer')) return 8;
+      if (lowerRole.includes('designer') || lowerRole.includes('trainer') || lowerRole.includes('teacher')) return 9;
+      if (lowerRole.includes('executive')) return 10;
+      if (lowerRole.includes('officer') || lowerRole.includes('assistant')) return 11;
+      if (lowerRole.includes('peon')) return 12;
       return 100;
     };
     return [...employees].sort((a, b) => getHierarchyWeight(a.role || '') - getHierarchyWeight(b.role || ''));
@@ -98,34 +102,22 @@ export default function App() {
 
 
 
-  // Simulated Live Feed punches based on real employees
+  // Simulated Live Feed punches based on active real employees
   const [feedItems, setFeedItems] = useState<FeedItem[]>([
     {
       id: 'punch-1',
-      name: 'Kazi Fahmid Hassan Rafi',
-      employeeId: '102',
-      department: 'IT Department',
+      name: 'Abul Kalam Azad',
+      employeeId: '105',
+      department: 'Management',
       location: 'Dhaka HQ',
-      avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=256&h=256&fit=crop',
+      avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=256&h=256&fit=crop',
       type: 'IN',
       method: 'Face',
-      time: '06:37 PM',
+      time: '08:45 AM',
       timeAgo: 'moments ago',
     },
     {
       id: 'punch-2',
-      name: 'Kazi Fahmid Hassan Rafi',
-      employeeId: '102',
-      department: 'IT Department',
-      location: 'Paribagh',
-      avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=256&h=256&fit=crop',
-      type: 'OUT',
-      method: 'Face',
-      time: '06:35 PM',
-      timeAgo: 'moments ago',
-    },
-    {
-      id: 'punch-3',
       name: 'Golam Maula Lincoln',
       employeeId: '101',
       department: 'HR & Admin',
@@ -133,35 +125,11 @@ export default function App() {
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&h=256&fit=crop',
       type: 'IN',
       method: 'Face',
-      time: '06:36 PM',
+      time: '08:47 AM',
       timeAgo: 'moments ago',
     },
     {
-      id: 'punch-4',
-      name: 'Prosunjit Roy',
-      employeeId: '103',
-      department: 'Finance & Accounts',
-      location: 'Dhaka HQ',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=256&h=256&fit=crop',
-      type: 'IN',
-      method: 'Face',
-      time: '06:35 PM',
-      timeAgo: 'moments ago',
-    },
-    {
-      id: 'punch-5',
-      name: 'Prosunjit Roy',
-      employeeId: '103',
-      department: 'Finance & Accounts',
-      location: 'Paribagh',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=256&h=256&fit=crop',
-      type: 'OUT',
-      method: 'Face',
-      time: '06:35 PM',
-      timeAgo: 'moments ago',
-    },
-    {
-      id: 'punch-6',
+      id: 'punch-3',
       name: 'Julia Akter Lipi',
       employeeId: '107',
       department: 'Finance & Accounts',
@@ -169,8 +137,44 @@ export default function App() {
       avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=256&h=256&fit=crop',
       type: 'IN',
       method: 'Fingerprint',
-      time: '06:32 PM',
-      timeAgo: '6 min ago',
+      time: '08:50 AM',
+      timeAgo: '2 mins ago',
+    },
+    {
+      id: 'punch-4',
+      name: 'Md. Golam Maula',
+      employeeId: '108',
+      department: 'Engineering',
+      location: 'Dhaka HQ',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=256&h=256&fit=crop',
+      type: 'IN',
+      method: 'Face',
+      time: '08:52 AM',
+      timeAgo: '5 mins ago',
+    },
+    {
+      id: 'punch-5',
+      name: 'Firdoushe Sultana',
+      employeeId: '106',
+      department: 'Management',
+      location: 'Dhaka HQ',
+      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256&h=256&fit=crop',
+      type: 'IN',
+      method: 'RFID',
+      time: '08:55 AM',
+      timeAgo: '8 mins ago',
+    },
+    {
+      id: 'punch-6',
+      name: 'Abu Shahadat Md Tanvir',
+      employeeId: '118',
+      department: 'Support Department',
+      location: 'Paribagh',
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=256&h=256&fit=crop',
+      type: 'IN',
+      method: 'RFID',
+      time: '08:58 AM',
+      timeAgo: '12 mins ago',
     },
   ]);
 
@@ -205,8 +209,9 @@ export default function App() {
       const validTabs = [
         'dashboard', 'attendance', 'attendance-list', 'attendance-individual', 
         'attendance-summary', 'attendance-sheet', 'attendance-request', 'occupancy', 
-        'reports', 'employees', 'shift-management', 'leave', 'overtime', 'devices', 
-        'settings', 'profile', 'project-management', 'visitor-management', 'parking-management'
+        'reports', 'employees', 'employee-create', 'employee-chart', 'shift-management',
+        'leave', 'overtime', 'devices', 'settings', 'profile', 'project-management',
+        'visitor-management', 'parking-management'
       ];
       if (validTabs.includes(hash)) {
         setActiveTab(hash);
@@ -402,6 +407,15 @@ export default function App() {
               setExternalSearchQuery={setSearchQuery}
             />
           )}
+          {activeTab === 'employee-create' && (
+            <CreateEmployeePage 
+              showToast={showToast} 
+              employees={sortedEmployees}
+              setEmployees={setEmployees}
+              setActiveTab={setActiveTab}
+            />
+          )}
+          {activeTab === 'employee-chart' && <EmployeeChartPage showToast={showToast} employees={sortedEmployees} />}
 
           {activeTab === 'shift-management' && <ShiftManagementPage showToast={showToast} />}
           {activeTab === 'leave' && <LeavePage showToast={showToast} />}
