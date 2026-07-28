@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Search, Download, Plus, FileSpreadsheet, Trash, X,
   Mail, Phone, MapPin, Calendar, Camera, Shield, Award
@@ -18,57 +18,95 @@ interface WorkablePageProps {
 /* ========================================================================== */
 /*                           1. ATTENDANCE LOGS                               */
 /* ========================================================================== */
-export const AttendancePage: React.FC<WorkablePageProps> = ({ showToast }) => {
-  const [search, setSearch] = useState('');
+export const AttendancePage: React.FC<WorkablePageProps> = ({ showToast, employees = [] }) => {
+  const [searchDate, setSearchDate] = useState('2026-07-28');
   const [filterStatus, setFilterStatus] = useState('All');
-  
-  const [records] = useState([
-    { id: '1', empId: '55702', name: 'Kazi Fahmid Hassan Rafi', dept: 'HR & Admin', time: '09:05 AM', status: 'Late', method: 'Face', loc: 'Dhaka' },
-    { id: '2', empId: '50132', name: 'Prosunjit Roy', dept: 'Finance & Accounts', time: '08:45 AM', status: 'On Time', method: 'Fingerprint', loc: 'Paribagh' },
-    { id: '3', empId: '60010', name: 'Anik Barua', dept: 'Operations', time: '08:55 AM', status: 'On Time', method: 'RFID', loc: 'Paribagh' },
-    { id: '4', empId: '32001', name: 'Samia Rahman', dept: 'HR & Admin', time: '-', status: 'On Leave', method: '-', loc: '-' },
-    { id: '5', empId: '40120', name: 'Md. Ashfaq Ilham Baig', dept: 'IT', time: '09:12 AM', status: 'Late', method: 'Face', loc: 'Dhaka' },
-    { id: '6', empId: '28119', name: 'Zahid Khan', dept: 'Finance & Accounts', time: '08:30 AM', status: 'On Time', method: 'GPS', loc: 'Remote' },
-    { id: '7', empId: '19920', name: 'Farhan Adil', dept: 'Operations', time: '-', status: 'Absent', method: '-', loc: '-' }
-  ]);
 
   const handleExport = () => {
     showToast('Attendance Log exported to Excel (XLSX) successfully!', 'success');
   };
 
+  const handleSearch = () => {
+    showToast('Filtered daily attendance records.', 'success');
+  };
+
+  const records = useMemo(() => {
+    const locations = ['Dhaka HQ', 'Paribagh', 'Remote', 'Banani Branch'];
+    const methods = ['Face', 'Fingerprint', 'RFID', 'GPS'];
+    
+    return employees.map((emp, idx) => {
+      let status = 'On Time';
+      let time = '08:45 AM';
+      let method = methods[idx % methods.length];
+      let loc = locations[idx % locations.length];
+
+      if (emp.status === 'On Leave') {
+        status = 'On Leave';
+        time = '-';
+        method = '-';
+        loc = '-';
+      } else if (emp.status === 'Inactive') {
+        status = 'Absent';
+        time = '-';
+        method = '-';
+        loc = '-';
+      } else if (idx % 6 === 0) {
+        status = 'Late';
+        time = '09:15 AM';
+      } else if (idx % 11 === 0) {
+        status = 'Absent';
+        time = '-';
+        method = '-';
+        loc = '-';
+      }
+
+      return {
+        id: emp.id,
+        empId: emp.id,
+        name: emp.name,
+        dept: emp.dept || 'HR & Admin',
+        time,
+        status,
+        method,
+        loc,
+        date: '2026-07-28'
+      };
+    });
+  }, [employees]);
+
   const filtered = records.filter(r => {
-    const matchesSearch = r.name.toLowerCase().includes(search.toLowerCase()) || r.empId.includes(search);
     const matchesStatus = filterStatus === 'All' || r.status === filterStatus;
-    return matchesSearch && matchesStatus;
+    const matchesDate = !searchDate || r.date === searchDate;
+    return matchesStatus && matchesDate;
   });
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">Attendance Logs</h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Detailed status logs of employee biometric punches</p>
+    <div className="space-y-6 font-manrope">
+      {/* Daily Attendance Report Bar */}
+      <div className="w-full bg-[#8B5CF6] text-white text-center py-3.5 px-6 rounded-2xl font-bold text-sm tracking-wide shadow-sm">
+        Daily Attendance Report
       </div>
 
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm space-y-4">
-        {/* Controls */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
-              <input 
-                type="text" 
-                placeholder="Search by ID or name..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:text-slate-200"
-              />
-            </div>
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm space-y-5">
+        {/* Controls / Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Date</label>
+            <input 
+              type="date" 
+              value={searchDate}
+              onChange={e => setSearchDate(e.target.value)}
+              className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-750 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:text-slate-200 font-semibold"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Status</label>
             <select 
               value={filterStatus}
               onChange={e => setFilterStatus(e.target.value)}
-              className="px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200"
+              className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-750 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:text-slate-200 font-semibold cursor-pointer"
             >
-              <option value="All">All Statuses</option>
+              <option value="All">Select a status</option>
               <option value="On Time">On Time</option>
               <option value="Late">Late</option>
               <option value="Absent">Absent</option>
@@ -76,8 +114,19 @@ export const AttendancePage: React.FC<WorkablePageProps> = ({ showToast }) => {
             </select>
           </div>
           <button 
+            onClick={handleSearch}
+            className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-extrabold tracking-wider transition-all shadow-sm flex items-center justify-center gap-1.5 hover:scale-[1.01]"
+          >
+            Search
+          </button>
+        </div>
+
+        {/* Action Header */}
+        <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-700/50 pt-4 flex-wrap gap-3">
+          <p className="text-xs font-bold text-slate-400">Search Results ({filtered.length} found)</p>
+          <button 
             onClick={handleExport}
-            className="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all"
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
           >
             <Download size={14} /> Export Logs
           </button>
@@ -98,31 +147,37 @@ export const AttendancePage: React.FC<WorkablePageProps> = ({ showToast }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 dark:divide-slate-750">
-              {filtered.map(r => (
-                <tr key={r.id} className="text-slate-700 dark:text-slate-350 hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
-                  <td className="py-3 px-2 font-semibold">#{r.empId}</td>
-                  <td className="py-3 px-2 font-bold">{r.name}</td>
-                  <td className="py-3 px-2">{r.dept}</td>
-                  <td className="py-3 px-2 font-medium">{r.time}</td>
-                  <td className="py-3 px-2">{r.loc}</td>
-                  <td className="py-3 px-2">
-                    {r.method !== '-' && (
-                      <span className="bg-slate-100 dark:bg-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded">{r.method}</span>
-                    )}
-                    {r.method === '-' && '-'}
-                  </td>
-                  <td className="py-3 px-2">
-                    <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                      r.status === 'On Time' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400' :
-                      r.status === 'Late' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400' :
-                      r.status === 'Absent' ? 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-950/20 dark:text-rose-400' :
-                      'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/20 dark:text-blue-400'
-                    }`}>
-                      {r.status}
-                    </span>
-                  </td>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-slate-400 font-medium">No attendance records found for this date/status.</td>
                 </tr>
-              ))}
+              ) : (
+                filtered.map(r => (
+                  <tr key={r.id} className="text-slate-700 dark:text-slate-350 hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
+                    <td className="py-3 px-2 font-semibold">#{r.empId}</td>
+                    <td className="py-3 px-2 font-bold">{r.name}</td>
+                    <td className="py-3 px-2">{r.dept}</td>
+                    <td className="py-3 px-2 font-medium">{r.time}</td>
+                    <td className="py-3 px-2">{r.loc}</td>
+                    <td className="py-3 px-2">
+                      {r.method !== '-' && (
+                        <span className="bg-slate-100 dark:bg-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded">{r.method}</span>
+                      )}
+                      {r.method === '-' && '-'}
+                    </td>
+                    <td className="py-3 px-2">
+                      <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        r.status === 'On Time' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400' :
+                        r.status === 'Late' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400' :
+                        r.status === 'Absent' ? 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-950/20 dark:text-rose-400' :
+                        'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/20 dark:text-blue-400'
+                      }`}>
+                        {r.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -1243,6 +1298,405 @@ export const ProfilePage: React.FC<WorkablePageProps> = ({ showToast }) => {
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                      14. INDIVIDUAL ATTENDANCE REPORT                      */
+/* ========================================================================== */
+export const IndividualReportPage: React.FC<WorkablePageProps> = ({ showToast, employees = [] }) => {
+  const [selectedEmp, setSelectedEmp] = useState('101');
+  const [dateFrom, setDateFrom] = useState('2026-07-01');
+  const [dateTo, setDateTo] = useState('2026-07-28');
+  const [reportGenerated, setReportGenerated] = useState(true);
+
+  const handleGenerate = (e: React.FormEvent) => {
+    e.preventDefault();
+    setReportGenerated(true);
+    showToast('Generated individual attendance report.', 'success');
+  };
+
+  return (
+    <div className="space-y-6 font-manrope">
+      <div className="w-full bg-[#8B5CF6] text-white text-center py-3.5 px-6 rounded-2xl font-bold text-sm tracking-wide shadow-sm">
+        Individual Attendance Report
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm space-y-5">
+        <form onSubmit={handleGenerate} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Select Employee</label>
+            <select
+              value={selectedEmp}
+              onChange={e => setSelectedEmp(e.target.value)}
+              className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-750 rounded-xl focus:outline-none dark:text-slate-200 font-semibold"
+            >
+              {employees.map(emp => (
+                <option key={emp.id} value={emp.id}>{emp.name} (#{emp.id})</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">From Date</label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={e => setDateFrom(e.target.value)}
+              className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-750 rounded-xl focus:outline-none dark:text-slate-200 font-semibold"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">To Date</label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={e => setDateTo(e.target.value)}
+              className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-750 rounded-xl focus:outline-none dark:text-slate-200 font-semibold"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-extrabold tracking-wider transition-all shadow-sm"
+          >
+            Search
+          </button>
+        </form>
+
+        {reportGenerated && (
+          <div className="space-y-6 border-t border-slate-100 dark:border-slate-700/50 pt-6">
+            {/* KPI Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-4 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 rounded-xl text-center">
+                <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">18</span>
+                <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Present Days</p>
+              </div>
+              <div className="p-4 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 rounded-xl text-center">
+                <span className="text-2xl font-black text-amber-600 dark:text-amber-400">2</span>
+                <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Late Entries</p>
+              </div>
+              <div className="p-4 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 rounded-xl text-center">
+                <span className="text-2xl font-black text-blue-600 dark:text-blue-400">1</span>
+                <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Approved Leaves</p>
+              </div>
+              <div className="p-4 bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 rounded-xl text-center">
+                <span className="text-2xl font-black text-rose-600 dark:text-rose-400">0</span>
+                <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Absences</p>
+              </div>
+            </div>
+
+            {/* Attendance List */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Detailed Punch Records</h3>
+              <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                <div className="py-3 flex justify-between items-center text-xs">
+                  <div>
+                    <p className="font-bold text-slate-800 dark:text-slate-200">July 28, 2026</p>
+                    <p className="text-[10px] text-slate-450">HQ Entrance • Face Scanner</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-slate-700 dark:text-slate-300">IN: 08:50 AM • OUT: 06:05 PM</p>
+                    <span className="text-[9px] font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-500/20">On Time</span>
+                  </div>
+                </div>
+                <div className="py-3 flex justify-between items-center text-xs">
+                  <div>
+                    <p className="font-bold text-slate-800 dark:text-slate-200">July 27, 2026</p>
+                    <p className="text-[10px] text-slate-450">HQ Entrance • Face Scanner</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-slate-700 dark:text-slate-300">IN: 09:12 AM • OUT: 06:10 PM</p>
+                    <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded-full border border-amber-500/20">Late (12 mins)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                      15. SUMMARY ATTENDANCE REPORT                         */
+/* ========================================================================== */
+export const SummaryReportPage: React.FC<WorkablePageProps> = ({ showToast }) => {
+  const [selectedMonth, setSelectedMonth] = useState('2026-07');
+  const [filterDept, setFilterDept] = useState('All');
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    showToast('Filtered summary report.', 'success');
+  };
+
+  return (
+    <div className="space-y-6 font-manrope">
+      <div className="w-full bg-[#8B5CF6] text-white text-center py-3.5 px-6 rounded-2xl font-bold text-sm tracking-wide shadow-sm">
+        Summary Attendance Report
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm space-y-5">
+        <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Month</label>
+            <input
+              type="month"
+              value={selectedMonth}
+              onChange={e => setSelectedMonth(e.target.value)}
+              className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-750 rounded-xl focus:outline-none dark:text-slate-200 font-semibold"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Department</label>
+            <select
+              value={filterDept}
+              onChange={e => setFilterDept(e.target.value)}
+              className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-750 rounded-xl focus:outline-none dark:text-slate-200 font-semibold"
+            >
+              <option value="All">All Departments</option>
+              <option value="HR & Admin">HR & Admin</option>
+              <option value="Finance & Accounts">Finance & Accounts</option>
+              <option value="IT Department">IT Department</option>
+              <option value="Software Department">Software Department</option>
+            </select>
+          </div>
+          <button
+            type="submit"
+            className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-extrabold tracking-wider transition-all shadow-sm"
+          >
+            Search
+          </button>
+        </form>
+
+        <div className="border-t border-slate-100 dark:border-slate-700/50 pt-5 space-y-4">
+          <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Department Summary Statistics</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="p-4 bg-slate-50/50 dark:bg-slate-900/20 border border-slate-150 dark:border-slate-750 rounded-xl space-y-2">
+              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-250">HR & Admin</h4>
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>Avg Attendance Rate</span>
+                <span className="font-bold text-emerald-500">96.8%</span>
+              </div>
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>Avg Late Rate</span>
+                <span className="font-bold text-amber-500">3.2%</span>
+              </div>
+            </div>
+            <div className="p-4 bg-slate-50/50 dark:bg-slate-900/20 border border-slate-150 dark:border-slate-750 rounded-xl space-y-2">
+              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-250">IT Department</h4>
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>Avg Attendance Rate</span>
+                <span className="font-bold text-emerald-500">92.4%</span>
+              </div>
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>Avg Late Rate</span>
+                <span className="font-bold text-amber-500">7.6%</span>
+              </div>
+            </div>
+            <div className="p-4 bg-slate-50/50 dark:bg-slate-900/20 border border-slate-150 dark:border-slate-750 rounded-xl space-y-2">
+              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-250">Software Department</h4>
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>Avg Attendance Rate</span>
+                <span className="font-bold text-emerald-500">98.1%</span>
+              </div>
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>Avg Late Rate</span>
+                <span className="font-bold text-amber-500">1.9%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                          16. ATTENDANCE SHEET                              */
+/* ========================================================================== */
+export const AttendanceSheetPage: React.FC<WorkablePageProps> = ({ showToast, employees = [] }) => {
+  const [selectedMonth, setSelectedMonth] = useState('2026-07');
+  const days = Array.from({ length: 15 }, (_, i) => i + 1); // Mock 15 days for horizontal space
+
+  const records = useMemo(() => {
+    return employees.map((emp, idx) => {
+      const empStatus = Array.from({ length: 15 }, (_, dayIdx) => {
+        if (emp.status === 'On Leave') return 'V';
+        if (emp.status === 'Inactive') return 'A';
+        if ((dayIdx + idx) % 13 === 0) return 'A';
+        if ((dayIdx + idx) % 8 === 0) return 'L';
+        if ((dayIdx + idx) % 15 === 0) return 'V';
+        return 'P';
+      });
+      return {
+        name: emp.name,
+        dept: emp.dept || 'HR & Admin',
+        status: empStatus
+      };
+    });
+  }, [employees]);
+
+  return (
+    <div className="space-y-6 font-manrope">
+      <div className="w-full bg-[#8B5CF6] text-white text-center py-3.5 px-6 rounded-2xl font-bold text-sm tracking-wide shadow-sm">
+        Attendance Sheet View
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm space-y-5">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-700/50 pb-4">
+          <div className="flex items-center gap-3">
+            <input
+              type="month"
+              value={selectedMonth}
+              onChange={e => setSelectedMonth(e.target.value)}
+              className="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-755 rounded-xl focus:outline-none dark:text-slate-200 font-semibold"
+            />
+            <button
+              onClick={() => showToast('Attendance Sheet updated.', 'success')}
+              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+            >
+              Load Sheet
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-3 text-[10px] font-bold text-slate-400 uppercase">
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-emerald-500 rounded flex items-center justify-center text-white text-[9px]">P</span> Present</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-rose-500 rounded flex items-center justify-center text-white text-[9px]">A</span> Absent</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-amber-500 rounded flex items-center justify-center text-white text-[9px]">L</span> Late</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-blue-500 rounded flex items-center justify-center text-white text-[9px]">V</span> Vacation</span>
+          </div>
+        </div>
+
+        {/* Sheet Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs border divide-y divide-slate-100 dark:divide-slate-750 dark:border-slate-700">
+            <thead>
+              <tr className="bg-slate-50 dark:bg-slate-900 text-slate-500">
+                <th className="py-2.5 px-3 font-semibold border-r dark:border-slate-700 min-w-[160px]">Employee Name</th>
+                {days.map(d => (
+                  <th key={d} className="py-2.5 px-1 text-center font-semibold border-r dark:border-slate-700 w-8">{d}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-750">
+              {records.map((r, idx) => (
+                <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10 text-slate-700 dark:text-slate-300">
+                  <td className="py-3 px-3 border-r dark:border-slate-700 font-bold">{r.name}</td>
+                  {r.status.map((st, i) => (
+                    <td key={i} className="py-3 px-1 text-center border-r dark:border-slate-700">
+                      <span className={`inline-block w-5 h-5 rounded text-[10px] font-black leading-5 text-white ${
+                        st === 'P' ? 'bg-emerald-500' :
+                        st === 'A' ? 'bg-rose-500' :
+                        st === 'L' ? 'bg-amber-500' : 'bg-blue-500'
+                      }`}>
+                        {st}
+                      </span>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                        17. REQUEST MANUAL ATTENDANCE                       */
+/* ========================================================================== */
+export const RequestAttendancePage: React.FC<WorkablePageProps> = ({ showToast }) => {
+  const [reqDate, setReqDate] = useState('2026-07-28');
+  const [reqTime, setReqTime] = useState('09:00');
+  const [reqType, setReqType] = useState('IN');
+  const [reason, setReason] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    showToast('Manual attendance request submitted to HR Administrator.', 'info');
+    setReason('');
+  };
+
+  return (
+    <div className="space-y-6 font-manrope">
+      <div className="w-full bg-[#8B5CF6] text-white text-center py-3.5 px-6 rounded-2xl font-bold text-sm tracking-wide shadow-sm">
+        Request Attendance Adjustment
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-6 shadow-sm max-w-xl space-y-5">
+        <h3 className="font-bold text-sm text-slate-800 dark:text-white border-b pb-3 border-slate-100 dark:border-slate-700">Manual Punch Entry Form</h3>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase">Adjustment Date</label>
+              <input
+                type="date"
+                required
+                value={reqDate}
+                onChange={e => setReqDate(e.target.value)}
+                className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-semibold"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase">Punched Time</label>
+              <input
+                type="time"
+                required
+                value={reqTime}
+                onChange={e => setReqTime(e.target.value)}
+                className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-semibold"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-500 uppercase">Punch Action Type</label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-350 cursor-pointer select-none">
+                <input
+                  type="radio"
+                  name="type"
+                  checked={reqType === 'IN'}
+                  onChange={() => setReqType('IN')}
+                  className="text-indigo-650 focus:ring-indigo-500"
+                />
+                <span>PUNCH IN (Check-In)</span>
+              </label>
+              <label className="flex items-center gap-2 text-xs font-semibold text-slate-750 dark:text-slate-355 cursor-pointer select-none">
+                <input
+                  type="radio"
+                  name="type"
+                  checked={reqType === 'OUT'}
+                  onChange={() => setReqType('OUT')}
+                  className="text-indigo-650 focus:ring-indigo-500"
+                />
+                <span>PUNCH OUT (Check-Out)</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-500 uppercase">Adjustment Reason</label>
+            <textarea
+              required
+              rows={3}
+              placeholder="Explain why you are requesting a manual entry adjustment (e.g. Device connectivity issue, forgot card)..."
+              value={reason}
+              onChange={e => setReason(e.target.value)}
+              className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+          >
+            Submit Request Entry
+          </button>
+        </form>
       </div>
     </div>
   );

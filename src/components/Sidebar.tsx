@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  LayoutDashboard, ClipboardCheck, Users, BarChart3, 
+  LayoutDashboard, Users, BarChart3, 
   UserCheck, CalendarDays, CalendarX, Clock, 
   Smartphone, Settings, FolderKanban, UserPlus, 
-  Car, ChevronLeft, ChevronRight 
+  Car, ChevronLeft, ChevronRight, Fingerprint, ChevronDown, ChevronUp 
 } from 'lucide-react';
 import { TouchAndSolveLogo } from './TouchAndSolveLogo';
 
@@ -20,9 +20,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed,
   setIsCollapsed,
 }) => {
+  const [isAttendanceOpen, setIsAttendanceOpen] = useState(() => activeTab.startsWith('attendance'));
+
+  // Expand if active tab switches to an attendance sub-tab externally
+  useEffect(() => {
+    if (activeTab.startsWith('attendance')) {
+      setIsAttendanceOpen(true);
+    }
+  }, [activeTab]);
+
   const menuItems = [
     { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
-    { id: 'attendance', name: 'Attendance', icon: ClipboardCheck },
+    { 
+      id: 'attendance', 
+      name: 'Attendance', 
+      icon: Fingerprint,
+      subItems: [
+        { id: 'attendance-list', name: 'List Of Attendance' },
+        { id: 'attendance-individual', name: 'Individual Report' },
+        { id: 'attendance-summary', name: 'Summary Report' },
+        { id: 'attendance-sheet', name: 'Attendance Sheet' },
+        { id: 'attendance-request', name: 'Request Attendance' }
+      ]
+    },
     { id: 'occupancy', name: 'Occupancy', icon: Users },
     { id: 'reports', name: 'Reports', icon: BarChart3 },
     { id: 'employees', name: 'Employees', icon: UserCheck },
@@ -57,6 +77,69 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5 scrollbar-thin">
         {menuItems.map((item) => {
           const Icon = item.icon;
+          
+          if (item.subItems) {
+            const isSubItemActive = item.subItems.some(sub => sub.id === activeTab) || activeTab === 'attendance';
+            return (
+              <div key={item.id} className="space-y-1">
+                <button
+                  onClick={() => {
+                    if (isCollapsed) {
+                      setIsCollapsed(false);
+                      setIsAttendanceOpen(true);
+                    } else {
+                      setIsAttendanceOpen(!isAttendanceOpen);
+                    }
+                  }}
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl transition-all duration-200 text-left font-medium text-sm group relative ${
+                    isSubItemActive && !isAttendanceOpen
+                      ? 'bg-indigo-650/40 text-white border border-indigo-500/25'
+                      : isAttendanceOpen && isSubItemActive
+                      ? 'bg-[#8B5CF6] text-white shadow-lg shadow-purple-600/30'
+                      : 'hover:bg-[#2d2854] hover:text-white text-slate-400'
+                  }`}
+                >
+                  <div className="flex items-center gap-3.5">
+                    <Icon size={19} className={`shrink-0 transition-transform duration-200 group-hover:scale-110 ${isSubItemActive ? 'text-white' : 'text-slate-400'}`} />
+                    {!isCollapsed && (
+                      <span className="truncate">{item.name}</span>
+                    )}
+                  </div>
+                  {!isCollapsed && (
+                    isAttendanceOpen ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />
+                  )}
+                  {isCollapsed && (
+                    <div className="absolute left-full ml-3 px-2 py-1 bg-slate-950 text-white text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-md">
+                      {item.name}
+                    </div>
+                  )}
+                </button>
+
+                {/* Submenu Items */}
+                {isAttendanceOpen && !isCollapsed && (
+                  <div className="pl-6 space-y-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                    {item.subItems.map(sub => {
+                      const isSubActive = activeTab === sub.id;
+                      return (
+                        <button
+                          key={sub.id}
+                          onClick={() => setActiveTab(sub.id)}
+                          className={`w-full flex items-center px-4 py-2 rounded-lg text-left text-xs font-semibold transition-all duration-205 ${
+                            isSubActive 
+                              ? 'text-indigo-400 bg-indigo-500/10 font-bold border-l-2 border-indigo-500 pl-3' 
+                              : 'text-slate-400 hover:text-white hover:bg-slate-800/30'
+                          }`}
+                        >
+                          {sub.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
           const isActive = activeTab === item.id;
           return (
             <button

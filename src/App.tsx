@@ -17,7 +17,8 @@ import {
   AttendancePage, OccupancyPage, ReportsPage, EmployeesPage,
   ShiftManagementPage, LeavePage, OvertimePage, DevicesPage,
   SettingsPage, ProjectManagementPage, VisitorManagementPage,
-  ParkingManagementPage, ProfilePage
+  ParkingManagementPage, ProfilePage,
+  IndividualReportPage, SummaryReportPage, AttendanceSheetPage, RequestAttendancePage
 } from './components/WorkablePages';
 import { LoginPage } from './components/LoginPage';
 
@@ -31,9 +32,10 @@ export default function App() {
   const [activeTab, setActiveTab] = useState(() => {
     const hash = window.location.hash.substring(1);
     const validTabs = [
-      'dashboard', 'attendance', 'occupancy', 'reports', 'employees',
-      'shift-management', 'leave', 'overtime', 'devices', 'settings',
-      'profile', 'project-management', 'visitor-management', 'parking-management'
+      'dashboard', 'attendance', 'attendance-list', 'attendance-individual', 
+      'attendance-summary', 'attendance-sheet', 'attendance-request', 'occupancy', 
+      'reports', 'employees', 'shift-management', 'leave', 'overtime', 'devices', 
+      'settings', 'profile', 'project-management', 'visitor-management', 'parking-management'
     ];
     return validTabs.includes(hash) ? hash : 'dashboard';
   });
@@ -76,6 +78,7 @@ export default function App() {
     { id: '126', name: 'Sayad Golam Morshed', role: 'Admission Officer', dept: 'Education', email: 'morshed@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?q=80&w=256&h=256&fit=crop' },
     { id: '127', name: 'Labibul Hasan', role: '', dept: 'HR & Admin', email: 'labibul@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=256&h=256&fit=crop' },
     { id: '128', name: 'Md Abdur Rahim', role: 'Peon', dept: 'Support Department', email: 'rahim@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=256&h=256&fit=crop' },
+    { id: '129', name: 'Md. Labib Hasan', role: 'Office Assistant', dept: 'HR & Admin', email: 'labib.oa@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=256&h=256&fit=crop' },
   ]);
 
 
@@ -171,7 +174,13 @@ export default function App() {
  
   // Synchronize hash in URL with active tab
   useEffect(() => {
-    window.location.hash = activeTab;
+    if (activeTab === 'dashboard') {
+      if (window.location.hash !== '') {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    } else {
+      window.location.hash = activeTab;
+    }
   }, [activeTab]);
 
   // Listen to hash change from browser navigation
@@ -179,12 +188,15 @@ export default function App() {
     const handleHashChange = () => {
       const hash = window.location.hash.substring(1);
       const validTabs = [
-        'dashboard', 'attendance', 'occupancy', 'reports', 'employees',
-        'shift-management', 'leave', 'overtime', 'devices', 'settings',
-        'profile', 'project-management', 'visitor-management', 'parking-management'
+        'dashboard', 'attendance', 'attendance-list', 'attendance-individual', 
+        'attendance-summary', 'attendance-sheet', 'attendance-request', 'occupancy', 
+        'reports', 'employees', 'shift-management', 'leave', 'overtime', 'devices', 
+        'settings', 'profile', 'project-management', 'visitor-management', 'parking-management'
       ];
       if (validTabs.includes(hash)) {
         setActiveTab(hash);
+      } else if (hash === '') {
+        setActiveTab('dashboard');
       }
     };
 
@@ -359,7 +371,11 @@ export default function App() {
             </>
           )}
 
-          {activeTab === 'attendance' && <AttendancePage showToast={showToast} />}
+          {(activeTab === 'attendance' || activeTab === 'attendance-list') && <AttendancePage showToast={showToast} employees={employees} />}
+          {activeTab === 'attendance-individual' && <IndividualReportPage showToast={showToast} employees={employees} />}
+          {activeTab === 'attendance-summary' && <SummaryReportPage showToast={showToast} employees={employees} />}
+          {activeTab === 'attendance-sheet' && <AttendanceSheetPage showToast={showToast} employees={employees} />}
+          {activeTab === 'attendance-request' && <RequestAttendancePage showToast={showToast} employees={employees} />}
           {activeTab === 'occupancy' && <OccupancyPage showToast={showToast} />}
           {activeTab === 'reports' && <ReportsPage showToast={showToast} />}
           {activeTab === 'employees' && (
