@@ -1631,13 +1631,12 @@ export const AttendanceSheetPage: React.FC<WorkablePageProps> = ({ showToast, em
                 {dateList.map((dt) => (
                   <th 
                     key={dt.day} 
-                    className={`py-2 px-1 text-center font-bold border-r dark:border-slate-700 w-12 min-w-[44px] ${
+                    className={`py-2.5 px-1.5 text-center font-bold border-r dark:border-slate-700 w-14 min-w-[56px] ${
                       dt.isFriday ? 'bg-rose-50/50 dark:bg-rose-950/15 text-rose-500' : ''
                     }`}
                   >
-                    <div className="text-[9px] font-medium text-slate-400 dark:text-slate-555 leading-none">{dt.monthName}</div>
-                    <div className="text-xs font-black my-0.5 leading-none">{String(dt.day).padStart(2, '0')}</div>
-                    <div className="text-[9px] font-bold text-indigo-500 dark:text-indigo-400 leading-none">{dt.dayName}</div>
+                    <div className="text-[10px] font-black text-slate-800 dark:text-slate-200 leading-none">Day-{dt.day}</div>
+                    <div className="text-[9px] font-bold text-indigo-500 dark:text-indigo-400 mt-1 leading-none">{dt.dayName}</div>
                   </th>
                 ))}
               </tr>
