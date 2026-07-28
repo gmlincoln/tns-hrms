@@ -1,0 +1,1052 @@
+import React, { useState } from 'react';
+import { 
+  Search, Download, Plus, FileSpreadsheet, Trash, X
+} from 'lucide-react';
+
+/* Helper toast trigger */
+interface WorkablePageProps {
+  showToast: (msg: string, type?: 'success' | 'info' | 'warning') => void;
+  externalSearchQuery?: string;
+  setExternalSearchQuery?: (val: string) => void;
+  employees?: any[];
+  setEmployees?: React.Dispatch<React.SetStateAction<any[]>>;
+}
+
+
+
+/* ========================================================================== */
+/*                           1. ATTENDANCE LOGS                               */
+/* ========================================================================== */
+export const AttendancePage: React.FC<WorkablePageProps> = ({ showToast }) => {
+  const [search, setSearch] = useState('');
+  const [filterStatus, setFilterStatus] = useState('All');
+  
+  const [records] = useState([
+    { id: '1', empId: '55702', name: 'Kazi Fahmid Hassan Rafi', dept: 'HR & Admin', time: '09:05 AM', status: 'Late', method: 'Face', loc: 'Dhaka' },
+    { id: '2', empId: '50132', name: 'Prosunjit Roy', dept: 'Finance & Accounts', time: '08:45 AM', status: 'On Time', method: 'Fingerprint', loc: 'Paribagh' },
+    { id: '3', empId: '60010', name: 'Anik Barua', dept: 'Operations', time: '08:55 AM', status: 'On Time', method: 'RFID', loc: 'Paribagh' },
+    { id: '4', empId: '32001', name: 'Samia Rahman', dept: 'HR & Admin', time: '-', status: 'On Leave', method: '-', loc: '-' },
+    { id: '5', empId: '40120', name: 'Md. Ashfaq Ilham Baig', dept: 'IT', time: '09:12 AM', status: 'Late', method: 'Face', loc: 'Dhaka' },
+    { id: '6', empId: '28119', name: 'Zahid Khan', dept: 'Finance & Accounts', time: '08:30 AM', status: 'On Time', method: 'GPS', loc: 'Remote' },
+    { id: '7', empId: '19920', name: 'Farhan Adil', dept: 'Operations', time: '-', status: 'Absent', method: '-', loc: '-' }
+  ]);
+
+  const handleExport = () => {
+    showToast('Attendance Log exported to Excel (XLSX) successfully!', 'success');
+  };
+
+  const filtered = records.filter(r => {
+    const matchesSearch = r.name.toLowerCase().includes(search.toLowerCase()) || r.empId.includes(search);
+    const matchesStatus = filterStatus === 'All' || r.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">Attendance Logs</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Detailed status logs of employee biometric punches</p>
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm space-y-4">
+        {/* Controls */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
+              <input 
+                type="text" 
+                placeholder="Search by ID or name..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:text-slate-200"
+              />
+            </div>
+            <select 
+              value={filterStatus}
+              onChange={e => setFilterStatus(e.target.value)}
+              className="px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200"
+            >
+              <option value="All">All Statuses</option>
+              <option value="On Time">On Time</option>
+              <option value="Late">Late</option>
+              <option value="Absent">Absent</option>
+              <option value="On Leave">On Leave</option>
+            </select>
+          </div>
+          <button 
+            onClick={handleExport}
+            className="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all"
+          >
+            <Download size={14} /> Export Logs
+          </button>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-slate-100 dark:border-slate-700/50 text-slate-400 pb-2 font-semibold">
+                <th className="py-3 px-2">Employee ID</th>
+                <th className="py-3 px-2">Name</th>
+                <th className="py-3 px-2">Department</th>
+                <th className="py-3 px-2">Time</th>
+                <th className="py-3 px-2">Location</th>
+                <th className="py-3 px-2">Method</th>
+                <th className="py-3 px-2">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50 dark:divide-slate-750">
+              {filtered.map(r => (
+                <tr key={r.id} className="text-slate-700 dark:text-slate-350 hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
+                  <td className="py-3 px-2 font-semibold">#{r.empId}</td>
+                  <td className="py-3 px-2 font-bold">{r.name}</td>
+                  <td className="py-3 px-2">{r.dept}</td>
+                  <td className="py-3 px-2 font-medium">{r.time}</td>
+                  <td className="py-3 px-2">{r.loc}</td>
+                  <td className="py-3 px-2">
+                    {r.method !== '-' && (
+                      <span className="bg-slate-100 dark:bg-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded">{r.method}</span>
+                    )}
+                    {r.method === '-' && '-'}
+                  </td>
+                  <td className="py-3 px-2">
+                    <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                      r.status === 'On Time' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400' :
+                      r.status === 'Late' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400' :
+                      r.status === 'Absent' ? 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-950/20 dark:text-rose-400' :
+                      'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/20 dark:text-blue-400'
+                    }`}>
+                      {r.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                             2. OCCUPANCY                                   */
+/* ========================================================================== */
+export const OccupancyPage: React.FC<WorkablePageProps> = ({ showToast }) => {
+  const sections = [
+    { name: 'Floor 1 - HR & Admin', capacity: 30, occupied: 15, color: 'bg-emerald-500' },
+    { name: 'Floor 2 - Engineering', capacity: 50, occupied: 45, color: 'bg-indigo-500' },
+    { name: 'Floor 3 - Accounts & Management', capacity: 25, occupied: 12, color: 'bg-amber-500' },
+    { name: 'Meeting Room Alpha', capacity: 10, occupied: 8, color: 'bg-rose-500' },
+    { name: 'Cafeteria', capacity: 60, occupied: 22, color: 'bg-blue-500' }
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">Occupancy & Floor Plan</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Live workspace seat layouts and floor densities</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {sections.map((sec, idx) => {
+          const percentage = Math.round((sec.occupied / sec.capacity) * 100);
+          return (
+            <div key={idx} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Zone</span>
+                <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${
+                  percentage > 85 ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'
+                }`}>
+                  {percentage > 85 ? 'Crowded' : 'Normal'}
+                </span>
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-slate-800 dark:text-white">{sec.name}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{sec.occupied} of {sec.capacity} seats occupied</p>
+              </div>
+
+              {/* Progress bar */}
+              <div className="space-y-1.5">
+                <div className="w-full bg-slate-100 dark:bg-slate-750 h-2 rounded-full overflow-hidden">
+                  <div className={`h-full ${sec.color} rounded-full`} style={{ width: `${percentage}%` }} />
+                </div>
+                <div className="flex items-center justify-between text-[10px] font-bold text-slate-400">
+                  <span>{percentage}% Occupancy</span>
+                  <span>{sec.capacity - sec.occupied} Free</span>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => showToast(`Opening interactive desk map for ${sec.name}`)}
+                className="w-full py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition-all text-slate-700 dark:text-slate-300"
+              >
+                View Seat Plan Map
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                              3. REPORTS                                    */
+/* ========================================================================== */
+export const ReportsPage: React.FC<WorkablePageProps> = ({ showToast }) => {
+  const [reportType, setReportType] = useState('attendance_summary');
+  const [format, setFormat] = useState('PDF');
+
+  const handleGenerate = () => {
+    showToast(`Generating ${reportType.replace('_', ' ')} in ${format} format...`, 'info');
+    setTimeout(() => {
+      showToast('Report generated! Click download button to retrieve document.', 'success');
+    }, 1500);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">Reports & Audits</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Compile attendance, overtime and leaves data sheets</p>
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-6 shadow-sm max-w-xl space-y-5">
+        <h3 className="font-bold text-sm text-slate-800 dark:text-white border-b pb-3 border-slate-100 dark:border-slate-700">Compile Dynamic Report</h3>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-slate-500 uppercase">Report Type</label>
+            <select 
+              value={reportType}
+              onChange={e => setReportType(e.target.value)}
+              className="w-full p-2.5 text-xs bg-slate-55 border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium"
+            >
+              <option value="attendance_summary">Daily Attendance Summary</option>
+              <option value="late_punches">Late Punches Register</option>
+              <option value="overtime_sheet">Overtime Billing Sheets</option>
+              <option value="leave_roster">Annual Leaves Roster</option>
+            </select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-slate-500 uppercase">Output Format</label>
+            <select 
+              value={format}
+              onChange={e => setFormat(e.target.value)}
+              className="w-full p-2.5 text-xs bg-slate-55 border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium"
+            >
+              <option value="PDF">Acrobat Document (PDF)</option>
+              <option value="CSV">Comma Separated values (CSV)</option>
+              <option value="XLSX">Microsoft Excel Sheet (XLSX)</option>
+            </select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-slate-500 uppercase">From Date</label>
+            <input type="date" defaultValue="2026-07-01" className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-slate-500 uppercase">To Date</label>
+            <input type="date" defaultValue="2026-07-28" className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" />
+          </div>
+        </div>
+
+        <button 
+          onClick={handleGenerate}
+          className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5"
+        >
+          <FileSpreadsheet size={16} /> Compile and Download Document
+        </button>
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                             4. EMPLOYEES                                   */
+/* ========================================================================== */
+export const EmployeesPage: React.FC<WorkablePageProps> = ({ 
+  showToast, 
+  externalSearchQuery = '', 
+  setExternalSearchQuery,
+  employees: propEmployees,
+  setEmployees: propSetEmployees
+}) => {
+  const [search, setSearch] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  // Sync local search and external search
+  const activeSearch = setExternalSearchQuery ? externalSearchQuery : search;
+  const handleSearchChange = (val: string) => {
+    if (setExternalSearchQuery) {
+      setExternalSearchQuery(val);
+    } else {
+      setSearch(val);
+    }
+  };
+
+  // Initial list fallback
+  const [localEmployees, setLocalEmployees] = useState([
+    { id: '101', name: 'Golam Maula Lincoln', role: 'Site Administrator', dept: 'HR & Admin', email: 'lincoln@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&h=256&fit=crop' },
+    { id: '102', name: 'Kazi Fahmid Hassan Rafi', role: 'System Developer', dept: 'IT Department', email: 'rafi@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=256&h=256&fit=crop' },
+    { id: '103', name: 'Prosunjit Roy', role: 'Senior Accountant', dept: 'Finance & Accounts', email: 'prosun@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=256&h=256&fit=crop' },
+    { id: '104', name: 'Samia Rahman', role: 'HR Executive', dept: 'HR & Admin', email: 'samia@touchandsolve.com', status: 'On Leave', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256&h=256&fit=crop' },
+
+    { id: '105', name: 'Abul Kalam Azad', role: 'Chief Executive Officer', dept: 'Management', email: 'azad@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=256&h=256&fit=crop' },
+    { id: '106', name: 'Firdoushe Sultana', role: 'Executive Vice President', dept: 'Management', email: 'firdoushe@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=256&h=256&fit=crop' },
+    { id: '107', name: 'Julia Akter Lipi', role: 'Finince Director', dept: 'Finance & Accounts', email: 'julia@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=256&h=256&fit=crop' },
+    { id: '108', name: 'Md. Golam Maula', role: 'Engineering Manager', dept: 'Engineering', email: 'golam@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=256&h=256&fit=crop' },
+    { id: '109', name: 'Monir Hossain', role: 'Asst Manager', dept: 'Management', email: 'monir@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&h=256&fit=crop' },
+    { id: '110', name: 'Mohiminul Islam', role: 'Asst Manager', dept: 'Management', email: 'mohiminul@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=256&h=256&fit=crop' },
+    { id: '111', name: 'Md. Akmot Ullah (Sohag)', role: 'Senior Executive', dept: 'HR & Admin', email: 'akmot@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=256&h=256&fit=crop' },
+    { id: '112', name: 'Md. Aminur Rahman', role: 'Senior Executive', dept: 'HR & Admin', email: 'aminur@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?q=80&w=256&h=256&fit=crop' },
+    { id: '113', name: 'Rifah Tasnia', role: 'Sr. Executive', dept: 'HR & Admin', email: 'rifah@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=256&h=256&fit=crop' },
+    { id: '114', name: 'TTC Admin', role: 'junior executive', dept: 'IT Department', email: 'ttcadmin@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&h=256&fit=crop' },
+    { id: '115', name: 'Md. Abdullah Al Mahfuz', role: 'App Developer', dept: 'Software Department', email: 'mahfuz@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=256&h=256&fit=crop' },
+    { id: '116', name: 'Ashraful Anam Alve', role: 'Developer', dept: 'Software Department', email: 'alve@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=256&h=256&fit=crop' },
+    { id: '117', name: 'Kamrul Islam Niloy', role: 'Developer', dept: 'Software Department', email: 'niloy@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=256&h=256&fit=crop' },
+    { id: '118', name: 'Abu Shahadat Md Tanvir', role: 'Support Engineer', dept: 'Support Department', email: 'tanvir@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1489980508314-941910ded1f4?q=80&w=256&h=256&fit=crop' },
+    { id: '119', name: 'MD Faruk Hosen', role: 'Support Engineers', dept: 'Support Department', email: 'faruk@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1513956589380-bad6acb9b9d4?q=80&w=256&h=256&fit=crop' },
+    { id: '120', name: 'Md Shariul Islam Sagar', role: 'Teacher', dept: 'Education', email: 'sagar@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?q=80&w=256&h=256&fit=crop' },
+    { id: '121', name: 'Monirul Islam', role: 'Teacher', dept: 'Education', email: 'monirul@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=256&h=256&fit=crop' },
+    { id: '122', name: 'Amit Podder', role: 'Graphic Designer', dept: 'Creative', email: 'amit@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1552058544-f2b08422138a?q=80&w=256&h=256&fit=crop' },
+    { id: '123', name: 'Md Arafat Hossain', role: 'Trainer', dept: 'Training', email: 'arafat@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=256&h=256&fit=crop' },
+    { id: '124', name: 'Md Riyadul Islam Ratul', role: 'Trainer', dept: 'Training', email: 'ratul@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?q=80&w=256&h=256&fit=crop' },
+    { id: '125', name: 'Md.Kawsar Uddin', role: 'Communication Officer', dept: 'PR & Communications', email: 'kawsar@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?q=80&w=256&h=256&fit=crop' },
+    { id: '126', name: 'Sayad Golam Morshed', role: 'Admission Officer', dept: 'Education', email: 'morshed@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?q=80&w=256&h=256&fit=crop' },
+    { id: '127', name: 'Labibul Hasan', role: '', dept: 'HR & Admin', email: 'labibul@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=256&h=256&fit=crop' },
+    { id: '128', name: 'Md Abdur Rahim', role: 'Peon', dept: 'Support Department', email: 'rahim@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=256&h=256&fit=crop' },
+  ]);
+
+
+  const employees = propEmployees || localEmployees;
+  const setEmployees = propSetEmployees || setLocalEmployees;
+
+  // Form states
+  const [newName, setNewName] = useState('');
+
+  const [newRole, setNewRole] = useState('');
+  const [newDept, setNewDept] = useState('HR & Admin');
+  const [newEmail, setNewEmail] = useState('');
+
+  const handleAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName || !newEmail) {
+      showToast('Please fill out all required fields.', 'warning');
+      return;
+    }
+    const newEmp = {
+      id: (Date.now() % 1000).toString(),
+      name: newName,
+      role: newRole,
+      dept: newDept,
+      email: newEmail,
+      status: 'Active',
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256&h=256&fit=crop'
+    };
+    setEmployees([...employees, newEmp]);
+    showToast(`New employee "${newName}" registered successfully!`, 'success');
+    setShowAddModal(false);
+    // clear form
+    setNewName('');
+    setNewRole('');
+    setNewEmail('');
+  };
+
+  const handleDelete = (id: string, name: string) => {
+    setEmployees(employees.filter(emp => emp.id !== id));
+    showToast(`Employee "${name}" deleted from roster.`, 'warning');
+  };
+
+  // Position rank mapping for sorting (lower numbers indicate higher hierarchy/seniority)
+  const positionRank: { [key: string]: number } = {
+    'Chief Executive Officer': 1,
+    'Site Administrator': 2,
+    'Executive Vice President': 3,
+    'Finince Director': 4,
+    'Engineering Manager': 5,
+    'Asst Manager': 6,
+    'Senior Accountant': 7,
+    'Senior Executive': 8,
+    'Sr. Executive': 8,
+    'HR Executive': 9,
+    'junior executive': 10,
+    'App Developer': 11,
+    'System Developer': 12,
+    'Developer': 13,
+    'Support Engineer': 14,
+    'Support Engineers': 14,
+    'Teacher': 15,
+    'Graphic Designer': 16,
+    'Trainer': 17,
+    'Communication Officer': 18,
+    'Admission Officer': 19,
+    '': 20, // Blank/intern positions
+    'Peon': 21,
+  };
+
+  const getRank = (role: string) => {
+    const norm = role.trim();
+    if (norm in positionRank) return positionRank[norm];
+    
+    // Fuzzy fallbacks for dynamically added positions
+    const lower = norm.toLowerCase();
+    if (lower.includes('ceo') || lower.includes('chief')) return 1;
+    if (lower.includes('vice president') || lower.includes('vp')) return 3;
+    if (lower.includes('director')) return 4;
+    if (lower.includes('manager')) return 5;
+    if (lower.includes('senior')) return 8;
+    if (lower.includes('executive')) return 9;
+    if (lower.includes('developer')) return 13;
+    if (lower.includes('engineer')) return 14;
+    if (lower.includes('teacher')) return 15;
+    if (lower.includes('trainer')) return 17;
+    return 99;
+  };
+
+  const filtered = employees
+    .filter(emp => emp.name.toLowerCase().includes(activeSearch.toLowerCase()) || emp.id.includes(activeSearch))
+    .sort((a, b) => getRank(a.role) - getRank(b.role));
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">Employee Directory</h1>
+          <p className="text-xs text-slate-550 dark:text-slate-400 mt-1">Manage active personnel, profiles and credentials</p>
+        </div>
+        <button 
+          onClick={() => setShowAddModal(true)}
+          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
+        >
+          <Plus size={14} /> Add Employee
+        </button>
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm space-y-4">
+        {/* Search */}
+        <div className="relative w-72">
+          <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
+          <input 
+            type="text" 
+            placeholder="Search by ID or name..."
+            value={activeSearch}
+            onChange={e => handleSearchChange(e.target.value)}
+
+            className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-55 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200"
+          />
+        </div>
+
+        {/* Directory Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filtered.map(emp => (
+            <div key={emp.id} className="p-4 bg-slate-50/50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-850 rounded-xl flex items-center justify-between hover:shadow-sm transition-shadow">
+              <div className="flex items-center gap-3">
+                <img src={emp.avatar} alt={emp.name} className="w-12 h-12 rounded-xl object-cover ring-2 ring-indigo-500/10" />
+                <div>
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-white">{emp.name}</h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">{emp.role} • {emp.dept}</p>
+                  <p className="text-[10px] text-slate-400 font-semibold">{emp.email}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded ${
+                  emp.status === 'Active' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20' : 'bg-amber-50 text-amber-600 dark:bg-amber-950/20'
+                }`}>
+                  {emp.status}
+                </span>
+                <button 
+                  onClick={() => handleDelete(emp.id, emp.name)}
+                  className="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all"
+                >
+                  <Trash size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Add Employee Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-slate-950/55 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl relative">
+            <button 
+              onClick={() => setShowAddModal(false)}
+              className="absolute right-4 top-4 text-slate-400 hover:text-slate-600"
+            >
+              <X size={18} />
+            </button>
+            <h3 className="font-bold text-base text-slate-800 dark:text-white mb-4">Register New Employee</h3>
+            
+            <form onSubmit={handleAdd} className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase">Full Name</label>
+                <input 
+                  type="text" 
+                  value={newName} 
+                  onChange={e => setNewName(e.target.value)} 
+                  required
+                  placeholder="e.g. Samia Rahman"
+                  className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" 
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase">Designation / Role</label>
+                <input 
+                  type="text" 
+                  value={newRole} 
+                  onChange={e => setNewRole(e.target.value)} 
+                  required
+                  placeholder="e.g. HR Manager"
+                  className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" 
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase">Department</label>
+                  <select 
+                    value={newDept} 
+                    onChange={e => setNewDept(e.target.value)}
+                    className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium"
+                  >
+                    <option value="HR & Admin">HR & Admin</option>
+                    <option value="Finance & Accounts">Finance & Accounts</option>
+                    <option value="IT Department">IT Department</option>
+                    <option value="Operations">Operations</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase">Corporate Email</label>
+                  <input 
+                    type="email" 
+                    value={newEmail} 
+                    onChange={e => setNewEmail(e.target.value)} 
+                    required
+                    placeholder="name@touchandsolve.com"
+                    className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" 
+                  />
+                </div>
+              </div>
+
+              <button 
+                type="submit"
+                className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+              >
+                Complete Registration
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                          5. SHIFT MANAGEMENT                               */
+/* ========================================================================== */
+export const ShiftManagementPage: React.FC<WorkablePageProps> = ({ showToast }) => {
+  const [selectedShift, setSelectedShift] = useState('Morning');
+  
+  const handleAssign = (e: React.FormEvent) => {
+    e.preventDefault();
+    showToast(`Successfully updated rosters for the ${selectedShift} shift!`, 'success');
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">Shift Management</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Assign active office rosters and schedule hours</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Assigner */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm space-y-4 lg:col-span-1">
+          <h3 className="font-bold text-sm text-slate-800 dark:text-white border-b pb-3 border-slate-100 dark:border-slate-700">Roster Allocator</h3>
+          <form onSubmit={handleAssign} className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase">Select Target Shift</label>
+              <select 
+                value={selectedShift}
+                onChange={e => setSelectedShift(e.target.value)}
+                className="w-full p-2.5 text-xs bg-slate-55 border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium"
+              >
+                <option value="Morning">Morning Shift (06:00 AM - 02:00 PM)</option>
+                <option value="Evening">Evening Shift (02:00 PM - 10:00 PM)</option>
+                <option value="Night">Night Shift (10:00 PM - 06:00 AM)</option>
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase">Assign Employee ID</label>
+              <input type="text" placeholder="e.g. 55702" className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" required />
+            </div>
+
+            <button 
+              type="submit"
+              className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+            >
+              Update Allocation
+            </button>
+          </form>
+        </div>
+
+        {/* Shift roster */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm space-y-4 lg:col-span-2">
+          <h3 className="font-bold text-sm text-slate-800 dark:text-white border-b pb-3 border-slate-100 dark:border-slate-700">Roster Calendar View</h3>
+          <div className="divide-y divide-slate-100 dark:divide-slate-700">
+            <div className="py-3 flex items-center justify-between text-xs">
+              <span className="font-bold text-slate-800 dark:text-slate-200">Morning (25 Employees)</span>
+              <span className="text-slate-400 font-medium">Samia R, Rafi K, +23 others</span>
+            </div>
+            <div className="py-3 flex items-center justify-between text-xs">
+              <span className="font-bold text-slate-800 dark:text-slate-200">Evening (30 Employees)</span>
+              <span className="text-slate-400 font-medium">Asif R, Prosunjit R, +28 others</span>
+            </div>
+            <div className="py-3 flex items-center justify-between text-xs">
+              <span className="font-bold text-slate-800 dark:text-slate-200">Night (22 Employees)</span>
+              <span className="text-slate-400 font-medium">Anik B, Zahid K, +20 others</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                                6. LEAVE                                    */
+/* ========================================================================== */
+export const LeavePage: React.FC<WorkablePageProps> = ({ showToast }) => {
+  const [balance] = useState({ sick: 8, annual: 14, casual: 6 });
+  const [type, setType] = useState('Sick');
+  
+  const handleApply = (e: React.FormEvent) => {
+    e.preventDefault();
+    showToast(`Leave application submitted successfully! Pending approval.`, 'success');
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">Leave Planner</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Submit leave forms and review quota statements</p>
+      </div>
+
+      {/* Balance Grid */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl text-center">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Sick Leaves Left</p>
+          <span className="text-2xl font-bold font-manrope mt-1 block">{balance.sick} Days</span>
+        </div>
+        <div className="p-4 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-800 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl text-center">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">Annual Leaves Left</p>
+          <span className="text-2xl font-bold font-manrope mt-1 block">{balance.annual} Days</span>
+        </div>
+        <div className="p-4 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 border border-amber-100 dark:border-amber-900/30 rounded-2xl text-center">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600">Casual Leaves Left</p>
+          <span className="text-2xl font-bold font-manrope mt-1 block">{balance.casual} Days</span>
+        </div>
+      </div>
+
+      {/* Leave Application */}
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm max-w-xl space-y-4">
+        <h3 className="font-bold text-sm text-slate-800 dark:text-white border-b pb-3 border-slate-100 dark:border-slate-700">Apply for Time Off</h3>
+        <form onSubmit={handleApply} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase">Leave Category</label>
+              <select 
+                value={type} 
+                onChange={e => setType(e.target.value)}
+                className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium"
+              >
+                <option value="Sick">Sick Leave</option>
+                <option value="Annual">Annual Leave</option>
+                <option value="Casual">Casual Leave</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase">Total Days</label>
+              <input type="number" defaultValue="1" min="1" className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" required />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase">Start Date</label>
+              <input type="date" required className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase">End Date</label>
+              <input type="date" required className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" />
+            </div>
+          </div>
+
+          <button 
+            type="submit"
+            className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+          >
+            Submit Application
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                                7. OVERTIME                                 */
+/* ========================================================================== */
+export const OvertimePage: React.FC<WorkablePageProps> = ({ showToast }) => {
+  const [logs] = useState([
+    { id: 1, employee: 'Prosunjit Roy', hours: '4.5 hrs', date: '2026-07-27', status: 'Approved' },
+    { id: 2, employee: 'Anik Barua', hours: '2.0 hrs', date: '2026-07-26', status: 'Pending' },
+  ]);
+
+  const handleClaim = (e: React.FormEvent) => {
+    e.preventDefault();
+    showToast('Overtime claim logged! Sent to Site Administrator for review.', 'info');
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">Overtime Roster</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Review worked overtime claims and record hourly sheets</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Logger */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm lg:col-span-1 space-y-4">
+          <h3 className="font-bold text-sm text-slate-800 dark:text-white border-b pb-3 border-slate-100 dark:border-slate-700">Submit OT claim</h3>
+          <form onSubmit={handleClaim} className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase">Employee ID</label>
+              <input type="text" placeholder="e.g. 50132" className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" required />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase">Claimed Hours</label>
+              <input type="number" step="0.5" placeholder="e.g. 3.5" className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" required />
+            </div>
+            <button type="submit" className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
+              Log Hours
+            </button>
+          </form>
+        </div>
+
+        {/* Logs */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm lg:col-span-2 space-y-4">
+          <h3 className="font-bold text-sm text-slate-800 dark:text-white border-b pb-3 border-slate-100 dark:border-slate-700">Overtime Claims Log</h3>
+          <div className="space-y-3.5">
+            {logs.map(log => (
+              <div key={log.id} className="flex items-center justify-between p-3.5 bg-slate-50/70 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                <div>
+                  <h4 className="font-bold text-xs text-slate-800 dark:text-slate-250">{log.employee}</h4>
+                  <span className="text-[10px] text-slate-500 font-medium">{log.date}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{log.hours}</span>
+                  <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded ${
+                    log.status === 'Approved' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                  }`}>{log.status}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                                8. DEVICES                                  */
+/* ========================================================================== */
+export const DevicesPage: React.FC<WorkablePageProps> = ({ showToast }) => {
+  const [devices] = useState([
+    { name: 'Terminal A - Face Scanner', ip: '192.168.1.101', status: 'Online', loc: 'Dhaka HQ entrance' },
+    { name: 'Terminal B - Fingerprint Reader', ip: '192.168.1.102', status: 'Online', loc: 'Paribagh Entry Gate' },
+    { name: 'Terminal C - RFID Scanner', ip: '192.168.1.103', status: 'Offline', loc: 'Level-4 Server Room' }
+  ]);
+
+  const handlePing = (name: string) => {
+    showToast(`Pinging ${name}... Response received (12ms)`, 'success');
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">Active Biometric Devices</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Monitor connectivity status of face scans, RFID gateways and logs</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {devices.map((dev, idx) => (
+          <div key={idx} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <span className={`w-2.5 h-2.5 rounded-full ${dev.status === 'Online' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+              <span className="text-[10px] text-slate-400 font-semibold">{dev.ip}</span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-800 dark:text-white">{dev.name}</h3>
+              <p className="text-xs text-slate-500 mt-1">{dev.loc}</p>
+            </div>
+            <button 
+              onClick={() => handlePing(dev.name)}
+              className="w-full py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-750 dark:text-slate-350 transition-colors"
+            >
+              Ping Terminal Connection
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                                9. SETTINGS                                 */
+/* ========================================================================== */
+export const SettingsPage: React.FC<WorkablePageProps> = ({ showToast }) => {
+  const [officeStart, setOfficeStart] = useState('09:00 AM');
+  
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    showToast('HR Gateways settings saved successfully!', 'success');
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">Admin Settings</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Configure workspace attendance buffers, alerts and notifications</p>
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-6 shadow-sm max-w-xl space-y-5">
+        <h3 className="font-bold text-sm text-slate-800 dark:text-white border-b pb-3 border-slate-100 dark:border-slate-700">Late Buffers & Roster Rules</h3>
+        
+        <form onSubmit={handleSave} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase">Standard Office Start</label>
+              <input 
+                type="text" 
+                value={officeStart}
+                onChange={e => setOfficeStart(e.target.value)}
+                className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" 
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase">Late Threshold Buffer (mins)</label>
+              <input type="number" defaultValue="15" className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-[10px] font-bold text-slate-500 uppercase block">Global Alerts</label>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" defaultChecked className="rounded text-indigo-600 focus:ring-indigo-500" />
+              <span className="text-xs text-slate-700 dark:text-slate-350">Alert Site Admin on terminal connectivity drops</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" defaultChecked className="rounded text-indigo-600 focus:ring-indigo-500" />
+              <span className="text-xs text-slate-700 dark:text-slate-350">Send weekly attendance reports to department leads</span>
+            </div>
+          </div>
+
+          <button type="submit" className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
+            Save System Settings
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                          10. PROJECT MANAGEMENT                            */
+/* ========================================================================== */
+export const ProjectManagementPage: React.FC<WorkablePageProps> = ({ showToast }) => {
+  const [projects] = useState([
+    { name: 'Touch & Solve ERP v2', lead: 'Asif Aminur Rashid', progress: 75, status: 'In Progress' },
+    { name: 'Biometric Gateway API Integration', lead: 'Kazi Fahmid Hassan Rafi', progress: 90, status: 'Testing' },
+    { name: 'Audit & Financial reporting module', lead: 'Prosunjit Roy', progress: 30, status: 'Planning' }
+  ]);
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">Project Attendance Track</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Logged work hours against client deliverables</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {projects.map((proj, idx) => (
+          <div key={idx} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">Active Project</span>
+              <span className="text-[9px] font-extrabold bg-slate-100 dark:bg-slate-750 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300">{proj.status}</span>
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-800 dark:text-white">{proj.name}</h3>
+              <p className="text-xs text-slate-500 mt-1">Lead: {proj.lead}</p>
+            </div>
+            {/* Progress */}
+            <div className="space-y-1">
+              <div className="w-full bg-slate-100 dark:bg-slate-750 h-1.5 rounded-full overflow-hidden">
+                <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${proj.progress}%` }} />
+              </div>
+              <div className="flex justify-between text-[9px] font-bold text-slate-400">
+                <span>Task Progress</span>
+                <span>{proj.progress}% Completed</span>
+              </div>
+            </div>
+            <button 
+              onClick={() => showToast(`Opening task board for ${proj.name}`)}
+              className="w-full py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors"
+            >
+              Open Project Board
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                          11. VISITOR MANAGEMENT                            */
+/* ========================================================================== */
+export const VisitorManagementPage: React.FC<WorkablePageProps> = ({ showToast }) => {
+  const [visitors] = useState([
+    { id: 1, name: 'Anisur Rahman', company: 'Global Solutions', host: 'Asif Aminur Rashid', inTime: '10:15 AM', outTime: '-', status: 'Checked In' },
+    { id: 2, name: 'Tahmid Hasan', company: 'Aventis Ltd.', host: 'Samia Rahman', inTime: '09:30 AM', outTime: '11:15 AM', status: 'Checked Out' }
+  ]);
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    showToast('Visitor registered and passcode issued.', 'success');
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">Visitor Logs</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Issue passes and log visitor arrivals</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Allocator */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm lg:col-span-1 space-y-4">
+          <h3 className="font-bold text-sm text-slate-800 dark:text-white border-b pb-3 border-slate-100 dark:border-slate-700">Register Visitor</h3>
+          <form onSubmit={handleRegister} className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase">Visitor Name</label>
+              <input type="text" placeholder="e.g. Anisur Rahman" className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" required />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase">Host Employee ID</label>
+              <input type="text" placeholder="e.g. 55702" className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" required />
+            </div>
+            <button type="submit" className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
+              Issue Entry Pass
+            </button>
+          </form>
+        </div>
+
+        {/* Logs */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm lg:col-span-2 space-y-4">
+          <h3 className="font-bold text-sm text-slate-800 dark:text-white border-b pb-3 border-slate-100 dark:border-slate-700">Active Visitor Passes</h3>
+          <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
+            {visitors.map(vis => (
+              <div key={vis.id} className="py-3 flex items-center justify-between text-xs">
+                <div>
+                  <h4 className="font-bold text-slate-800 dark:text-slate-200">{vis.name} ({vis.company})</h4>
+                  <p className="text-[10px] text-slate-500">Host: {vis.host} • IN: {vis.inTime} {vis.outTime !== '-' && `• OUT: ${vis.outTime}`}</p>
+                </div>
+                <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded ${
+                  vis.status === 'Checked In' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-150 text-slate-500'
+                }`}>{vis.status}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                          12. PARKING MANAGEMENT                            */
+/* ========================================================================== */
+export const ParkingManagementPage: React.FC<WorkablePageProps> = ({ showToast }) => {
+  const [slots] = useState([
+    { id: 'P-01', type: 'Car', status: 'Occupied', vehicle: 'DHK Metro GA 11-2093', employee: 'Asif Aminur Rashid' },
+    { id: 'P-02', type: 'Car', status: 'Free', vehicle: '-', employee: '-' },
+    { id: 'P-03', type: 'Bike', status: 'Occupied', vehicle: 'DHK Metro HA 45-1229', employee: 'Kazi Fahmid Hassan Rafi' }
+  ]);
+
+  const handleAllocate = (e: React.FormEvent) => {
+    e.preventDefault();
+    showToast('Parking spot allocated successfully!', 'success');
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">Parking Slot Allocator</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Manage office building basement parking space reservations</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Form */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm lg:col-span-1 space-y-4">
+          <h3 className="font-bold text-sm text-slate-800 dark:text-white border-b pb-3 border-slate-100 dark:border-slate-700">Allocate Space</h3>
+          <form onSubmit={handleAllocate} className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase">Target Slot</label>
+              <select className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium">
+                <option value="P-02">Slot P-02 (Free)</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase">Vehicle License plate</label>
+              <input type="text" placeholder="e.g. DHK Metro GA 11-2093" className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" required />
+            </div>
+            <button type="submit" className="w-full py-2 bg-indigo-655 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
+              Confirm Reservation
+            </button>
+          </form>
+        </div>
+
+        {/* slots list */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm lg:col-span-2 space-y-4">
+          <h3 className="font-bold text-sm text-slate-800 dark:text-white border-b pb-3 border-slate-100 dark:border-slate-700">Parking Space Status</h3>
+          <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
+            {slots.map(s => (
+              <div key={s.id} className="py-3 flex items-center justify-between text-xs">
+                <div>
+                  <h4 className="font-bold text-slate-800 dark:text-slate-200">{s.id} ({s.type})</h4>
+                  <p className="text-[10px] text-slate-400 font-semibold">{s.vehicle !== '-' ? `Plate: ${s.vehicle} • Assigned: ${s.employee}` : 'Available Slot'}</p>
+                </div>
+                <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded ${
+                  s.status === 'Occupied' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'
+                }`}>{s.status}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
