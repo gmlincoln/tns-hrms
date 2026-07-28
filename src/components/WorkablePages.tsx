@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { 
-  Search, Download, Plus, FileSpreadsheet, Trash, X
+  Search, Download, Plus, FileSpreadsheet, Trash, X,
+  Mail, Phone, MapPin, Calendar, Camera, Shield, Award
 } from 'lucide-react';
 
 /* Helper toast trigger */
@@ -1045,6 +1046,202 @@ export const ParkingManagementPage: React.FC<WorkablePageProps> = ({ showToast }
               </div>
             ))}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ========================================================================== */
+/*                          13. USER PROFILE PAGE                             */
+/* ========================================================================== */
+export const ProfilePage: React.FC<WorkablePageProps> = ({ showToast }) => {
+  const [profile, setProfile] = useState({
+    name: 'Golam Maula Lincoln',
+    role: 'Site Administrator',
+    dept: 'HR & Admin',
+    email: 'lincoln@touchandsolve.com',
+    phone: '+88 01958 227213',
+    location: 'Dhaka HQ, Bangladesh',
+    joined: 'January 12, 2023',
+    bio: 'Oversees the site operations, user authorization, and system configs for the Touch & Solve HRMS application.',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&h=256&fit=crop'
+  });
+
+  const [editMode, setEditMode] = useState(false);
+  const [formData, setFormData] = useState({ ...profile });
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    setProfile({ ...formData });
+    setEditMode(false);
+    showToast('Profile updated successfully!', 'success');
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">My Profile</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Manage your administrator account details and contact info</p>
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-sm overflow-hidden max-w-4xl font-manrope">
+        {/* Banner */}
+        <div className="h-32 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 relative" />
+
+        {/* Profile Card Header */}
+        <div className="px-6 pb-6 relative flex flex-col md:flex-row items-center md:items-end gap-5 -mt-10 border-b border-slate-100 dark:border-slate-700/50">
+          <div className="relative group">
+            <img 
+              src={profile.avatar} 
+              alt={profile.name} 
+              className="w-24 h-24 rounded-2xl object-cover ring-4 ring-white dark:ring-slate-800 shadow-md"
+            />
+            <button 
+              onClick={() => showToast('Avatar update is managed by the system directory.', 'info')}
+              className="absolute inset-0 bg-slate-900/60 rounded-2xl flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <Camera size={18} />
+            </button>
+          </div>
+
+          <div className="flex-1 text-center md:text-left space-y-1">
+            <div className="flex flex-col md:flex-row md:items-center gap-2">
+              <h2 className="text-xl font-extrabold text-slate-800 dark:text-white">{profile.name}</h2>
+              <span className="self-center md:self-start bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-450 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-indigo-100 dark:border-indigo-900/40 uppercase">
+                {profile.role}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{profile.dept} • {profile.location}</p>
+          </div>
+
+          <button 
+            onClick={() => {
+              if (editMode) setFormData({ ...profile });
+              setEditMode(!editMode);
+            }}
+            className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+          >
+            {editMode ? 'Cancel Edit' : 'Edit Profile'}
+          </button>
+        </div>
+
+        {/* Profile Info Details */}
+        <div className="p-6">
+          {editMode ? (
+            <form onSubmit={handleSave} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase">Full Name</label>
+                  <input 
+                    type="text" 
+                    value={formData.name} 
+                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" 
+                    required 
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase">Email Address</label>
+                  <input 
+                    type="email" 
+                    value={formData.email} 
+                    onChange={e => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" 
+                    required 
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase">Phone Number</label>
+                  <input 
+                    type="text" 
+                    value={formData.phone} 
+                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" 
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase">Office Location</label>
+                  <input 
+                    type="text" 
+                    value={formData.location} 
+                    onChange={e => setFormData({ ...formData, location: e.target.value })}
+                    className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" 
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase">Biography</label>
+                <textarea 
+                  value={formData.bio} 
+                  onChange={e => setFormData({ ...formData, bio: e.target.value })}
+                  rows={3}
+                  className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium"
+                />
+              </div>
+              <button type="submit" className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
+                Save Changes
+              </button>
+            </form>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Left Bio */}
+              <div className="md:col-span-2 space-y-6">
+                <div className="space-y-2">
+                  <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">About Me</h3>
+                  <p className="text-sm text-slate-750 dark:text-slate-300 leading-relaxed font-medium">{profile.bio}</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 bg-slate-50/50 dark:bg-slate-900/20 border border-slate-100 dark:border-slate-750 rounded-xl flex items-center gap-3">
+                    <Mail size={18} className="text-indigo-500" />
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase">Email</p>
+                      <p className="text-xs font-semibold text-slate-800 dark:text-slate-250 truncate">{profile.email}</p>
+                    </div>
+                  </div>
+                  <div className="p-4 bg-slate-50/50 dark:bg-slate-900/20 border border-slate-100 dark:border-slate-750 rounded-xl flex items-center gap-3">
+                    <Phone size={18} className="text-emerald-500" />
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase">Phone</p>
+                      <p className="text-xs font-semibold text-slate-800 dark:text-slate-250 truncate">{profile.phone}</p>
+                    </div>
+                  </div>
+                  <div className="p-4 bg-slate-50/50 dark:bg-slate-900/20 border border-slate-100 dark:border-slate-750 rounded-xl flex items-center gap-3">
+                    <MapPin size={18} className="text-rose-500" />
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase">Location</p>
+                      <p className="text-xs font-semibold text-slate-800 dark:text-slate-250 truncate">{profile.location}</p>
+                    </div>
+                  </div>
+                  <div className="p-4 bg-slate-50/50 dark:bg-slate-900/20 border border-slate-100 dark:border-slate-750 rounded-xl flex items-center gap-3">
+                    <Calendar size={18} className="text-amber-500" />
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase">Joined Date</p>
+                      <p className="text-xs font-semibold text-slate-800 dark:text-slate-250 truncate">{profile.joined}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Side Stats/Info */}
+              <div className="md:col-span-1 space-y-4">
+                <div className="p-5 border border-slate-150 dark:border-slate-700/80 rounded-2xl space-y-4">
+                  <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Access Info</h3>
+                  <div className="space-y-3.5">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-750 dark:text-slate-350">
+                      <Shield size={16} className="text-indigo-500" />
+                      <span>Role Level: Super Admin</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-750 dark:text-slate-355">
+                      <Award size={16} className="text-emerald-500" />
+                      <span>Security: Authorized VIP</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -17,8 +17,9 @@ import {
   AttendancePage, OccupancyPage, ReportsPage, EmployeesPage,
   ShiftManagementPage, LeavePage, OvertimePage, DevicesPage,
   SettingsPage, ProjectManagementPage, VisitorManagementPage,
-  ParkingManagementPage
+  ParkingManagementPage, ProfilePage
 } from './components/WorkablePages';
+import { LoginPage } from './components/LoginPage';
 
 interface Toast {
   id: string;
@@ -27,7 +28,15 @@ interface Toast {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(() => {
+    const hash = window.location.hash.substring(1);
+    const validTabs = [
+      'dashboard', 'attendance', 'occupancy', 'reports', 'employees',
+      'shift-management', 'leave', 'overtime', 'devices', 'settings',
+      'profile', 'project-management', 'visitor-management', 'parking-management'
+    ];
+    return validTabs.includes(hash) ? hash : 'dashboard';
+  });
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('theme') === 'dark' || 
@@ -35,6 +44,7 @@ export default function App() {
   });
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(() => sessionStorage.getItem('isLoggedIn') !== 'false');
 
   // Centralized employees list as single source of truth
   const [employees, setEmployees] = useState([
@@ -158,6 +168,29 @@ export default function App() {
       localStorage.setItem('theme', 'light');
     }
   }, [darkMode]);
+ 
+  // Synchronize hash in URL with active tab
+  useEffect(() => {
+    window.location.hash = activeTab;
+  }, [activeTab]);
+
+  // Listen to hash change from browser navigation
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.substring(1);
+      const validTabs = [
+        'dashboard', 'attendance', 'occupancy', 'reports', 'employees',
+        'shift-management', 'leave', 'overtime', 'devices', 'settings',
+        'profile', 'project-management', 'visitor-management', 'parking-management'
+      ];
+      if (validTabs.includes(hash)) {
+        setActiveTab(hash);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
 
   // Simulate incoming live logs based on active employees in roster
@@ -208,6 +241,14 @@ export default function App() {
   const handleQuickAction = (title: string) => {
     showToast(`Quick Action: "${title}" triggered successfully!`, 'success');
   };
+
+  if (!isLoggedIn) {
+    return <LoginPage onLogin={() => { 
+      setIsLoggedIn(true); 
+      sessionStorage.setItem('isLoggedIn', 'true');
+      showToast('Logged in successfully.', 'success'); 
+    }} />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 flex">
@@ -267,6 +308,11 @@ export default function App() {
           }}
           setActiveTab={setActiveTab}
           showToast={showToast}
+          onLogout={() => { 
+            setIsLoggedIn(false); 
+            sessionStorage.setItem('isLoggedIn', 'false');
+            showToast('Signed out successfully.', 'info'); 
+          }}
         />
 
         {/* Dashboard Pages */}
@@ -331,6 +377,7 @@ export default function App() {
           {activeTab === 'overtime' && <OvertimePage showToast={showToast} />}
           {activeTab === 'devices' && <DevicesPage showToast={showToast} />}
           {activeTab === 'settings' && <SettingsPage showToast={showToast} />}
+          {activeTab === 'profile' && <ProfilePage showToast={showToast} />}
           {activeTab === 'project-management' && <ProjectManagementPage showToast={showToast} />}
           {activeTab === 'visitor-management' && <VisitorManagementPage showToast={showToast} />}
           {activeTab === 'parking-management' && <ParkingManagementPage showToast={showToast} />}

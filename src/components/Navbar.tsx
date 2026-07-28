@@ -13,6 +13,7 @@ interface NavbarProps {
   setSearchQuery: (val: string) => void;
   setActiveTab: (tab: string) => void;
   showToast: (msg: string, type?: 'success' | 'info' | 'warning') => void;
+  onLogout: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -22,6 +23,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   setSearchQuery,
   setActiveTab,
   showToast,
+  onLogout,
 }) => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
@@ -309,7 +311,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <p className="text-xs text-slate-500 dark:text-slate-400">Admin • Site Admin</p>
               </div>
               <button
-                onClick={() => { showToast('Profile details: Golam Maula Lincoln (Site Administrator)', 'info'); closeAll(); }}
+                onClick={() => handleQuickAction('profile', 'My Profile')}
                 className="w-full px-4 py-2 text-left text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center gap-2.5 transition-colors"
               >
                 <User size={14} /> My Profile
@@ -322,7 +324,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
               <hr className="my-1.5 border-slate-100 dark:border-slate-700/50" />
               <button
-                onClick={() => { showToast('Signed out successfully (simulation).', 'info'); closeAll(); }}
+                onClick={() => { onLogout(); closeAll(); }}
                 className="w-full px-4 py-2 text-left text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center gap-2.5 transition-colors"
               >
                 <LogOut size={14} /> Sign Out
