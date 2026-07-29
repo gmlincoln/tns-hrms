@@ -721,7 +721,7 @@ export const LeavePage: React.FC<WorkablePageProps> = ({ showToast }) => {
       </div>
 
       {/* Balance Grid */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl text-center">
           <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Sick Leaves Left</p>
           <span className="text-2xl font-bold font-manrope mt-1 block">{balance.sick} Days</span>
@@ -1630,6 +1630,9 @@ export const AttendanceSheetPage: React.FC<WorkablePageProps> = ({ showToast, em
                 <th className="py-2.5 px-3 font-semibold border-r dark:border-slate-700 min-w-[180px] align-middle text-slate-600 dark:text-slate-300 sticky left-0 bg-slate-50 dark:bg-slate-900 z-20">
                   Employee Details
                 </th>
+                <th className="py-2.5 px-3 font-semibold border-r dark:border-slate-700 min-w-[110px] align-middle text-slate-600 dark:text-slate-300 text-center">
+                  Total Attended
+                </th>
                 {dateList.map((dt) => (
                   <th 
                     key={dt.day} 
@@ -1649,6 +1652,12 @@ export const AttendanceSheetPage: React.FC<WorkablePageProps> = ({ showToast, em
                   <td className="py-2.5 px-3 border-r dark:border-slate-700 sticky left-0 bg-white dark:bg-slate-800 z-10 whitespace-nowrap shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                     <div className="font-bold text-slate-800 dark:text-slate-200">{r.name}</div>
                     <div className="text-[9px] text-indigo-500 font-semibold mt-0.5">#{r.id}</div>
+                  </td>
+                  <td className="py-2.5 px-3 border-r dark:border-slate-700 text-center font-bold text-slate-800 dark:text-slate-200 bg-slate-50/30 dark:bg-slate-900/10">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">
+                      {r.status.filter(st => st === 'P' || st === 'L').length}
+                    </span>
+                    <span className="text-[10px] text-slate-405 font-normal"> / {r.status.filter(st => st !== 'Off').length} Days</span>
                   </td>
                   {r.status.map((st, i) => {
                     const dt = dateList[i];
@@ -1793,12 +1802,12 @@ export const EmployeeChartPage: React.FC<WorkablePageProps> = ({ employees = [] 
         Employee Organization Chart
       </div>
 
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-6 shadow-sm space-y-6 overflow-x-auto">
-        <div className="min-w-[800px] flex flex-col items-center py-4">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4 md:p-6 shadow-sm space-y-6 overflow-x-auto">
+        <div className="w-full md:min-w-[800px] flex flex-col items-center py-4">
           {/* CEO Node */}
           {employees.filter(e => e.role.toLowerCase().includes('chief executive') || e.role.toLowerCase().includes('ceo')).map(ceo => (
-            <div key={ceo.id} className="flex flex-col items-center">
-              <div className="bg-indigo-50 dark:bg-indigo-950/40 border-2 border-indigo-500 rounded-2xl p-4 text-center w-56 shadow-sm flex flex-col items-center">
+            <div key={ceo.id} className="flex flex-col items-center w-full max-w-xs md:max-w-none">
+              <div className="bg-indigo-50 dark:bg-indigo-950/40 border-2 border-indigo-500 rounded-2xl p-4 text-center w-full md:w-56 shadow-sm flex flex-col items-center">
                 <img src={ceo.avatar} className="w-12 h-12 rounded-full object-cover border-2 border-indigo-400 mb-2" alt={ceo.name} />
                 <h4 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 leading-tight">{ceo.name}</h4>
                 <p className="text-[10px] font-bold text-indigo-500 mt-1 uppercase tracking-wider">{ceo.role}</p>
@@ -1810,10 +1819,10 @@ export const EmployeeChartPage: React.FC<WorkablePageProps> = ({ employees = [] 
           ))}
 
           {/* EVP and Directors level */}
-          <div className="flex gap-8 justify-center relative">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-8 justify-center items-center w-full max-w-xs md:max-w-none relative">
             {employees.filter(e => e.role.toLowerCase().includes('vice president') || e.role.toLowerCase().includes('director')).map(mgr => (
-              <div key={mgr.id} className="flex flex-col items-center">
-                <div className="bg-purple-50 dark:bg-purple-950/40 border-2 border-purple-500 rounded-2xl p-4 text-center w-52 shadow-sm flex flex-col items-center">
+              <div key={mgr.id} className="flex flex-col items-center w-full">
+                <div className="bg-purple-50 dark:bg-purple-950/40 border-2 border-purple-500 rounded-2xl p-4 text-center w-full md:w-52 shadow-sm flex flex-col items-center">
                   <img src={mgr.avatar} className="w-12 h-12 rounded-full object-cover border-2 border-purple-400 mb-2" alt={mgr.name} />
                   <h4 className="font-extrabold text-xs text-slate-800 dark:text-slate-200 leading-tight">{mgr.name}</h4>
                   <p className="text-[9px] font-bold text-purple-500 mt-1 uppercase tracking-wider">{mgr.role}</p>
@@ -1824,13 +1833,13 @@ export const EmployeeChartPage: React.FC<WorkablePageProps> = ({ employees = [] 
             ))}
           </div>
 
-          <div className="w-4/5 h-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div>
+          <div className="hidden md:block w-4/5 h-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div>
 
           {/* Engineering Manager Level */}
-          <div className="flex gap-8 justify-center relative">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-8 justify-center items-center w-full max-w-xs md:max-w-none relative">
             {employees.filter(e => e.role.toLowerCase() === 'engineering manager').map(mgr => (
-              <div key={mgr.id} className="flex flex-col items-center">
-                <div className="bg-emerald-50 dark:bg-emerald-950/20 border-2 border-emerald-500 rounded-2xl p-4 text-center w-52 shadow-sm flex flex-col items-center">
+              <div key={mgr.id} className="flex flex-col items-center w-full">
+                <div className="bg-emerald-50 dark:bg-emerald-950/20 border-2 border-emerald-500 rounded-2xl p-4 text-center w-full md:w-52 shadow-sm flex flex-col items-center">
                   <img src={mgr.avatar} className="w-12 h-12 rounded-full object-cover border-2 border-emerald-400 mb-2" alt={mgr.name} />
                   <h4 className="font-extrabold text-xs text-slate-800 dark:text-slate-200 leading-tight">{mgr.name}</h4>
                   <p className="text-[9px] font-bold text-emerald-500 mt-1 uppercase tracking-wider">{mgr.role}</p>
@@ -1841,12 +1850,12 @@ export const EmployeeChartPage: React.FC<WorkablePageProps> = ({ employees = [] 
             ))}
           </div>
 
-          <div className="w-4/5 h-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div>
+          <div className="hidden md:block w-4/5 h-0.5 bg-slate-200 dark:bg-slate-700 my-2"></div>
 
           {/* Asst Managers Level */}
-          <div className="flex flex-wrap gap-6 justify-center mt-2">
+          <div className="grid grid-cols-2 md:flex md:flex-wrap gap-4 md:gap-6 justify-center w-full max-w-xs md:max-w-none mt-2">
             {employees.filter(e => e.role.toLowerCase().includes('asst manager') || e.role.toLowerCase().includes('assistant manager')).map(mgr => (
-              <div key={mgr.id} className="bg-amber-50 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-700/60 rounded-xl p-3 text-center w-44 shadow-xs flex flex-col items-center">
+              <div key={mgr.id} className="bg-amber-50 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-700/60 rounded-xl p-3 text-center w-full md:w-44 shadow-xs flex flex-col items-center">
                 <img src={mgr.avatar} className="w-10 h-10 rounded-full object-cover mb-1.5" alt={mgr.name} />
                 <h5 className="font-extrabold text-[11px] text-slate-800 dark:text-slate-200 leading-tight">{mgr.name}</h5>
                 <p className="text-[9px] font-bold text-amber-600 dark:text-amber-400 mt-0.5 uppercase tracking-wider">{mgr.role}</p>
@@ -1999,7 +2008,7 @@ export const CreateEmployeePage: React.FC<CreateEmployeeProps> = ({
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-3xl p-6 shadow-md space-y-8">
+      <form onSubmit={handleSubmit} className="responsive-form bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-3xl p-6 shadow-md space-y-8">
         
         {/* Main Details Section */}
         <div className="relative grid grid-cols-1 lg:grid-cols-4 gap-6">

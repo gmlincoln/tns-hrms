@@ -69,3 +69,13 @@
     stroke-dashoffset: 0;
   }
 }
+
+/* Responsive Forms Stack on Mobile */
+@media (max-width: 640px) {
+  .responsive-form .grid-cols-3 {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+  .responsive-form .col-span-2 {
+    grid-column: span 1 / span 1 !important;
+  }
+}

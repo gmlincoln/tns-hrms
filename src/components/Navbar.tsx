@@ -189,12 +189,21 @@ export const Navbar: React.FC<NavbarProps> = ({
         )}
         
         {/* Brand label/logo shorthand on mobile */}
-        <div className="flex items-center gap-2 lg:hidden pr-2">
+        <a 
+          href="/"
+          onClick={(e) => {
+            e.preventDefault();
+            setActiveTab('dashboard');
+            window.history.pushState(null, '', '/');
+          }}
+          className="flex items-center gap-2 lg:hidden pr-2 hover:opacity-90 transition-opacity"
+          title="Go to Dashboard"
+        >
           <img src={logoImg} alt="TNS Logo" className="w-7 h-7 shrink-0 object-contain" />
           <span className="text-xs sm:text-sm font-extrabold font-manrope text-slate-800 dark:text-white tracking-tight whitespace-nowrap">
             TNS-HRMS
           </span>
-        </div>
+        </a>
 
         {/* Desktop Search Bar (Hidden on Mobile) */}
         <div className="relative hidden md:block w-48 lg:w-64">
