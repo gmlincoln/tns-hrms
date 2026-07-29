@@ -80,6 +80,31 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [selectedDate, setSelectedDate] = useState(() => getBDDateString());
   const [bdDateTime, setBdDateTime] = useState(() => getBDDateTimeString());
 
+  const profileRef = React.useRef<HTMLDivElement>(null);
+  const quickActionsRef = React.useRef<HTMLDivElement>(null);
+  const notificationsRef = React.useRef<HTMLDivElement>(null);
+  const messagesRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (profileRef.current && !profileRef.current.contains(target)) {
+        setProfileDropdownOpen(false);
+      }
+      if (quickActionsRef.current && !quickActionsRef.current.contains(target)) {
+        setQuickActionsOpen(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(target)) {
+        setNotificationsOpen(false);
+      }
+      if (messagesRef.current && !messagesRef.current.contains(target)) {
+        setMessagesOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   React.useEffect(() => {
     const timer = setInterval(() => {
       setBdDateTime(getBDDateTimeString());
@@ -242,7 +267,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
 
         {/* Quick Actions Dropdown (Hidden on Mobile/Tablet) */}
-        <div className="relative hidden md:block">
+        <div ref={quickActionsRef} className="relative hidden md:block">
           <button
             onClick={() => quickActionsOpen ? setQuickActionsOpen(false) : closeAllDropdownsExcept(setQuickActionsOpen)}
             className={`p-2 rounded-xl transition-all relative ${quickActionsOpen
@@ -297,7 +322,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </button>
 
         {/* Notifications Dropdown */}
-        <div className="relative">
+        <div ref={notificationsRef} className="relative">
           <button
             onClick={() => notificationsOpen ? setNotificationsOpen(false) : closeAllDropdownsExcept(setNotificationsOpen)}
             className={`p-2 rounded-xl transition-all relative ${notificationsOpen
@@ -355,7 +380,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Messages Dropdown (Hidden on Mobile/Tablet) */}
-        <div className="relative hidden md:block">
+        <div ref={messagesRef} className="relative hidden md:block">
           <button
             onClick={() => messagesOpen ? setMessagesOpen(false) : closeAllDropdownsExcept(setMessagesOpen)}
             className={`p-2 rounded-xl transition-all relative ${messagesOpen
@@ -412,7 +437,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="h-6 w-px bg-slate-200 dark:bg-slate-800"></div>
 
         {/* User Profile Info Dropdown */}
-        <div className="relative">
+        <div ref={profileRef} className="relative">
           <button
             onClick={() => profileDropdownOpen ? setProfileDropdownOpen(false) : closeAllDropdownsExcept(setProfileDropdownOpen)}
             className="flex items-center gap-2.5 text-left focus:outline-none group"

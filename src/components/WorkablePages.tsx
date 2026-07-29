@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { 
   Search, Download, Plus, FileSpreadsheet, Trash, X,
-  Mail, Phone, MapPin, Calendar, Camera, Shield, Award
+  Mail, Phone, MapPin, Calendar, Camera, Shield, Award,
+  Fingerprint, CreditCard, Server, Router, Wifi, HardDrive, Laptop,
+  Car, Bike
 } from 'lucide-react';
 
 /* Helper toast trigger */
@@ -853,9 +855,19 @@ export const OvertimePage: React.FC<WorkablePageProps> = ({ showToast }) => {
 /* ========================================================================== */
 export const DevicesPage: React.FC<WorkablePageProps> = ({ showToast }) => {
   const [devices] = useState([
-    { name: 'Terminal A - Face Scanner', ip: '192.168.1.101', status: 'Online', loc: 'Dhaka HQ entrance' },
-    { name: 'Terminal B - Fingerprint Reader', ip: '192.168.1.102', status: 'Online', loc: 'Paribagh Entry Gate' },
-    { name: 'Terminal C - RFID Scanner', ip: '192.168.1.103', status: 'Offline', loc: 'Level-4 Server Room' }
+    { name: 'Terminal A - Face Scanner', ip: '192.168.1.101', status: 'Online', loc: 'Dhaka HQ entrance', icon: 'camera' },
+    { name: 'Terminal B - Fingerprint Reader', ip: '192.168.1.102', status: 'Online', loc: 'Paribagh Entry Gate', icon: 'fingerprint' },
+    { name: 'Terminal C - RFID Scanner', ip: '192.168.1.103', status: 'Offline', loc: 'Level-4 Server Room', icon: 'creditcard' },
+    { name: 'Terminal D - Face Gate II', ip: '192.168.1.104', status: 'Online', loc: 'Executive Office Lift Lobby', icon: 'camera' },
+    { name: 'Terminal E - Bio-Attendance Box', ip: '192.168.1.105', status: 'Online', loc: 'Cafeteria Entry Door', icon: 'fingerprint' },
+    { name: 'Terminal F - Smart Card Lock', ip: '192.168.1.106', status: 'Online', loc: 'IT Department Labs', icon: 'creditcard' },
+    { name: 'Gateway Server Central', ip: '192.168.1.200', status: 'Online', loc: 'Main Server Room Rack 2', icon: 'server' },
+    { name: 'Router HQ Main', ip: '192.168.1.1', status: 'Online', loc: 'Reception Front Office', icon: 'router' },
+    { name: 'Wifi AP - Lobby', ip: '192.168.1.10', status: 'Online', loc: 'Ground Floor Lift Lobby', icon: 'wifi' },
+    { name: 'Wifi AP - Floor 2', ip: '192.168.1.11', status: 'Online', loc: 'Floor 2 Main Open Workspace', icon: 'wifi' },
+    { name: 'Admin Backup Storage', ip: '192.168.1.250', status: 'Offline', loc: 'Archives Safe Room', icon: 'harddrive' },
+    { name: 'Terminal G - Guest Badge Station', ip: '192.168.1.107', status: 'Online', loc: 'Reception Counter Front', icon: 'creditcard' },
+    { name: 'Dev Station Terminal', ip: '192.168.1.150', status: 'Online', loc: 'QA Testing Sandbox Lab', icon: 'laptop' }
   ]);
 
   const handlePing = (name: string) => {
@@ -865,7 +877,7 @@ export const DevicesPage: React.FC<WorkablePageProps> = ({ showToast }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">Active Biometric Devices</h1>
+        <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">Active Biometric Devices & Nodes</h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Monitor connectivity status of face scans, RFID gateways and logs</p>
       </div>
 
@@ -873,8 +885,20 @@ export const DevicesPage: React.FC<WorkablePageProps> = ({ showToast }) => {
         {devices.map((dev, idx) => (
           <div key={idx} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
-              <span className={`w-2.5 h-2.5 rounded-full ${dev.status === 'Online' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-              <span className="text-[10px] text-slate-400 font-semibold">{dev.ip}</span>
+              <div className="flex items-center gap-2">
+                <span className={`w-2.5 h-2.5 rounded-full ${dev.status === 'Online' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                <span className="text-[10px] text-slate-400 font-semibold">{dev.ip}</span>
+              </div>
+              <div className="p-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
+                {dev.icon === 'camera' && <Camera size={14} />}
+                {dev.icon === 'fingerprint' && <Fingerprint size={14} />}
+                {dev.icon === 'creditcard' && <CreditCard size={14} />}
+                {dev.icon === 'server' && <Server size={14} />}
+                {dev.icon === 'router' && <Router size={14} />}
+                {dev.icon === 'wifi' && <Wifi size={14} />}
+                {dev.icon === 'harddrive' && <HardDrive size={14} />}
+                {dev.icon === 'laptop' && <Laptop size={14} />}
+              </div>
             </div>
             <div>
               <h3 className="font-bold text-sm text-slate-800 dark:text-white">{dev.name}</h3>
@@ -1068,61 +1092,314 @@ export const VisitorManagementPage: React.FC<WorkablePageProps> = ({ showToast }
 /* ========================================================================== */
 /*                          12. PARKING MANAGEMENT                            */
 /* ========================================================================== */
-export const ParkingManagementPage: React.FC<WorkablePageProps> = ({ showToast }) => {
-  const [slots] = useState([
+export const ParkingManagementPage: React.FC<WorkablePageProps> = ({ showToast, employees = [] }) => {
+  const [slots, setSlots] = useState([
     { id: 'P-01', type: 'Car', status: 'Occupied', vehicle: 'DHK Metro GA 11-2093', employee: 'Asif Aminur Rashid' },
     { id: 'P-02', type: 'Car', status: 'Free', vehicle: '-', employee: '-' },
-    { id: 'P-03', type: 'Bike', status: 'Occupied', vehicle: 'DHK Metro HA 45-1229', employee: 'Kazi Fahmid Hassan Rafi' }
+    { id: 'P-03', type: 'Bike', status: 'Occupied', vehicle: 'DHK Metro HA 45-1229', employee: 'Kazi Fahmid Hassan Rafi' },
+    { id: 'P-04', type: 'Car', status: 'Free', vehicle: '-', employee: '-' },
+    { id: 'P-05', type: 'Car', status: 'Occupied', vehicle: 'DHK Metro GA 15-4029', employee: 'Golam Maula Lincoln' },
+    { id: 'P-06', type: 'Bike', status: 'Free', vehicle: '-', employee: '-' },
+    { id: 'P-07', type: 'Car', status: 'Free', vehicle: '-', employee: '-' },
+    { id: 'P-08', type: 'Car', status: 'Free', vehicle: '-', employee: '-' },
+    { id: 'P-09', type: 'Bike', status: 'Occupied', vehicle: 'DHK Metro LA 12-4011', employee: 'Md Riyadul Islam Ratul' },
+    { id: 'P-10', type: 'Car', status: 'Free', vehicle: '-', employee: '-' },
+    { id: 'P-11', type: 'Car', status: 'Free', vehicle: '-', employee: '-' },
+    { id: 'P-12', type: 'Car', status: 'Free', vehicle: '-', employee: '-' },
   ]);
+
+  const [selectedSlotId, setSelectedSlotId] = useState('P-02');
+  const [plate, setPlate] = useState('');
+  const [employeeName, setEmployeeName] = useState('');
+  const [vehicleType, setVehicleType] = useState('Car');
+  const [activeDetailSlot, setActiveDetailSlot] = useState<any>(null);
+
+  const occupiedCount = slots.filter(s => s.status === 'Occupied').length;
+  const totalCount = slots.length;
+  const occupancyPercentage = Math.round((occupiedCount / totalCount) * 100);
 
   const handleAllocate = (e: React.FormEvent) => {
     e.preventDefault();
-    showToast('Parking spot allocated successfully!', 'success');
+    if (!selectedSlotId) return;
+    setSlots(prev => prev.map(s => {
+      if (s.id === selectedSlotId) {
+        return {
+          ...s,
+          status: 'Occupied',
+          vehicle: plate || 'Unknown Plate',
+          employee: employeeName || 'Guest Visitor',
+          type: vehicleType
+        };
+      }
+      return s;
+    }));
+    showToast(`Slot ${selectedSlotId} reserved successfully!`, 'success');
+    setPlate('');
+    setEmployeeName('');
+    
+    // Automatically select the next free slot
+    const nextFree = slots.find(s => s.id !== selectedSlotId && s.status === 'Free');
+    if (nextFree) {
+      setSelectedSlotId(nextFree.id);
+      setVehicleType(nextFree.type);
+    } else {
+      setSelectedSlotId('');
+    }
+  };
+
+  const handleRelease = (id: string) => {
+    setSlots(prev => prev.map(s => {
+      if (s.id === id) {
+        return {
+          ...s,
+          status: 'Free',
+          vehicle: '-',
+          employee: '-'
+        };
+      }
+      return s;
+    }));
+    showToast(`Released slot ${id}. Space is now available.`, 'info');
+    if (activeDetailSlot && activeDetailSlot.id === id) {
+      setActiveDetailSlot(null);
+    }
+  };
+
+  const handleSlotClick = (s: any) => {
+    if (s.status === 'Free') {
+      setSelectedSlotId(s.id);
+      setVehicleType(s.type);
+      setActiveDetailSlot(null);
+    } else {
+      setActiveDetailSlot(s);
+    }
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">Parking Slot Allocator</h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Manage office building basement parking space reservations</p>
+        <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white">Basement Parking Slot Allocator</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Manage office building basement parking space reservations dynamically</p>
+      </div>
+
+      {/* Ratios Info Header */}
+      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h3 className="font-extrabold text-base">Basement Parking Capacity</h3>
+          <p className="text-xs text-indigo-100 mt-1">Real-time allotment status map of Touch & Solve HQ</p>
+        </div>
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className="text-right hidden sm:block">
+            <span className="text-lg font-black">{occupiedCount} / {totalCount}</span>
+            <span className="text-[10px] block text-indigo-100 font-bold uppercase tracking-wider">Slots Occupied</span>
+          </div>
+          <div className="flex-1 sm:w-36 bg-indigo-950/40 h-2.5 rounded-full overflow-hidden border border-indigo-400/20">
+            <div className="bg-emerald-450 h-full rounded-full transition-all duration-500" style={{ width: `${occupancyPercentage}%` }}></div>
+          </div>
+          <span className="font-black text-sm">{occupancyPercentage}% Full</span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Form */}
+        {/* Reservation Form */}
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm lg:col-span-1 space-y-4">
-          <h3 className="font-bold text-sm text-slate-800 dark:text-white border-b pb-3 border-slate-100 dark:border-slate-700">Allocate Space</h3>
+          <div className="flex items-center justify-between border-b pb-3 border-slate-100 dark:border-slate-700">
+            <h3 className="font-bold text-sm text-slate-800 dark:text-white">Reserve Space</h3>
+            {selectedSlotId && (
+              <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 rounded-lg text-[10px] font-bold">
+                Selected: {selectedSlotId}
+              </span>
+            )}
+          </div>
+
           <form onSubmit={handleAllocate} className="space-y-4">
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-500 uppercase">Target Slot</label>
-              <select className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium">
-                <option value="P-02">Slot P-02 (Free)</option>
+              <select 
+                value={selectedSlotId}
+                onChange={e => {
+                  setSelectedSlotId(e.target.value);
+                  const matched = slots.find(s => s.id === e.target.value);
+                  if (matched) setVehicleType(matched.type);
+                }}
+                className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium"
+                required
+              >
+                <option value="">-- Choose available slot --</option>
+                {slots.filter(s => s.status === 'Free').map(s => (
+                  <option key={s.id} value={s.id}>Slot {s.id} ({s.type} - Available)</option>
+                ))}
               </select>
             </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-500 uppercase">Vehicle License plate</label>
-              <input type="text" placeholder="e.g. DHK Metro GA 11-2093" className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" required />
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase">Vehicle Type</label>
+                <select 
+                  value={vehicleType}
+                  onChange={e => setVehicleType(e.target.value)}
+                  className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium"
+                >
+                  <option value="Car">Car</option>
+                  <option value="Bike">Motorcycle</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase">Reserved For</label>
+                <select 
+                  value={employeeName}
+                  onChange={e => setEmployeeName(e.target.value)}
+                  className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" 
+                  required
+                >
+                  <option value="">Select Employee...</option>
+                  {employees.map(emp => (
+                    <option key={emp.id} value={emp.name}>{emp.name} ({emp.dept})</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <button type="submit" className="w-full py-2 bg-indigo-655 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
+
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase">Vehicle License Plate</label>
+              <input 
+                type="text" 
+                placeholder="e.g. DHK Metro GA 11-2093" 
+                value={plate}
+                onChange={e => setPlate(e.target.value)}
+                className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-200 font-medium" 
+                required 
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={!selectedSlotId}
+              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-100 disabled:dark:bg-slate-900 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+            >
               Confirm Reservation
             </button>
           </form>
+
+          {/* Quick detail overlay if selected slot is occupied */}
+          {activeDetailSlot && (
+            <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-900 border border-slate-150 dark:border-slate-750 rounded-xl space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-200">
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Slot {activeDetailSlot.id} Details</span>
+                <button onClick={() => setActiveDetailSlot(null)} className="text-slate-455 hover:text-slate-655"><X size={14} /></button>
+              </div>
+              <div className="text-xs space-y-1">
+                <p className="font-bold text-slate-800 dark:text-slate-200">Assigned: {activeDetailSlot.employee}</p>
+                <p className="text-[11px] text-slate-500">Plate: {activeDetailSlot.vehicle}</p>
+                <p className="text-[11px] text-slate-500">Vehicle Type: {activeDetailSlot.type}</p>
+              </div>
+              <button 
+                onClick={() => handleRelease(activeDetailSlot.id)}
+                className="w-full py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 text-rose-600 dark:text-rose-450 border border-rose-100 dark:border-rose-900/30 rounded-lg text-xs font-bold transition-all"
+              >
+                Release Space (Free Up)
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* slots list */}
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm lg:col-span-2 space-y-4">
-          <h3 className="font-bold text-sm text-slate-800 dark:text-white border-b pb-3 border-slate-100 dark:border-slate-700">Parking Space Status</h3>
-          <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
-            {slots.map(s => (
-              <div key={s.id} className="py-3 flex items-center justify-between text-xs">
-                <div>
-                  <h4 className="font-bold text-slate-800 dark:text-slate-200">{s.id} ({s.type})</h4>
-                  <p className="text-[10px] text-slate-400 font-semibold">{s.vehicle !== '-' ? `Plate: ${s.vehicle} • Assigned: ${s.employee}` : 'Available Slot'}</p>
-                </div>
-                <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded ${
-                  s.status === 'Occupied' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'
-                }`}>{s.status}</span>
+        {/* Visual Parking Lot Slots Grid */}
+        <div className="bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-inner lg:col-span-2 space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="font-bold text-sm text-slate-800 dark:text-white">HQ Basement Lot Map</h3>
+              <p className="text-[10px] text-slate-400">Click a slot to select (free) or manage (occupied)</p>
+            </div>
+            <div className="flex items-center gap-3 text-[10px] font-bold">
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-emerald-500" /> Free</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-indigo-500" /> Selected</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-rose-500" /> Occupied</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-4 bg-slate-50 dark:bg-slate-950/40 relative">
+            {/* Top Row Slots */}
+            <div className="grid grid-cols-6 gap-2">
+              {slots.slice(0, 6).map(s => {
+                const isSelected = selectedSlotId === s.id;
+                const isOccupied = s.status === 'Occupied';
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => handleSlotClick(s)}
+                    className={`flex flex-col items-center justify-between p-2.5 h-24 rounded-lg border-2 transition-all relative ${
+                      isOccupied 
+                        ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-350 dark:border-rose-800/80 hover:bg-rose-100/50' 
+                        : isSelected 
+                          ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-500 shadow-md shadow-indigo-500/10'
+                          : 'bg-white dark:bg-slate-800 border-dashed border-slate-200 dark:border-slate-700 hover:border-emerald-400'
+                    }`}
+                  >
+                    <span className={`text-[9px] font-black absolute top-1 left-1.5 ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`}>{s.id}</span>
+                    <div className="my-auto flex flex-col items-center gap-1">
+                      {isOccupied ? (
+                        <>
+                          {s.type === 'Car' ? <Car size={16} className="text-rose-500 animate-pulse" /> : <Bike size={16} className="text-rose-500 animate-pulse" />}
+                          <span className="text-[8px] font-extrabold text-rose-600 dark:text-rose-450 line-clamp-1 break-all max-w-[50px]">{s.vehicle}</span>
+                        </>
+                      ) : (
+                        <>
+                          {s.type === 'Car' ? <Car size={16} className="text-slate-300 dark:text-slate-650" /> : <Bike size={16} className="text-slate-300 dark:text-slate-650" />}
+                          <span className="text-[8px] font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-widest">Free</span>
+                        </>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Central Driveway Lane Indicator */}
+            <div className="h-10 bg-slate-750 dark:bg-slate-900 rounded-lg flex items-center justify-between px-6 border-y border-slate-600 relative overflow-hidden select-none">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-full border-t border-dashed border-amber-400 border-2"></div>
               </div>
-            ))}
+              <span className="text-[8px] font-extrabold tracking-widest text-slate-500 uppercase z-10">Basement Entrance ➔</span>
+              <span className="text-[8px] font-extrabold tracking-widest text-slate-500 uppercase z-10">Driveway Lane</span>
+            </div>
+
+            {/* Bottom Row Slots */}
+            <div className="grid grid-cols-6 gap-2">
+              {slots.slice(6, 12).map(s => {
+                const isSelected = selectedSlotId === s.id;
+                const isOccupied = s.status === 'Occupied';
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => handleSlotClick(s)}
+                    className={`flex flex-col items-center justify-between p-2.5 h-24 rounded-lg border-2 transition-all relative ${
+                      isOccupied 
+                        ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-350 dark:border-rose-800/80 hover:bg-rose-100/50' 
+                        : isSelected 
+                          ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-500 shadow-md shadow-indigo-500/10'
+                          : 'bg-white dark:bg-slate-800 border-dashed border-slate-200 dark:border-slate-700 hover:border-emerald-400'
+                    }`}
+                  >
+                    <span className={`text-[9px] font-black absolute top-1 left-1.5 ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`}>{s.id}</span>
+                    <div className="my-auto flex flex-col items-center gap-1">
+                      {isOccupied ? (
+                        <>
+                          {s.type === 'Car' ? <Car size={16} className="text-rose-500 animate-pulse" /> : <Bike size={16} className="text-rose-500 animate-pulse" />}
+                          <span className="text-[8px] font-extrabold text-rose-600 dark:text-rose-450 line-clamp-1 break-all max-w-[50px]">{s.vehicle}</span>
+                        </>
+                      ) : (
+                        <>
+                          {s.type === 'Car' ? <Car size={16} className="text-slate-300 dark:text-slate-650" /> : <Bike size={16} className="text-slate-300 dark:text-slate-650" />}
+                          <span className="text-[8px] font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-widest">Free</span>
+                        </>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

@@ -438,7 +438,7 @@ export default function App() {
           {activeTab === 'profile' && <ProfilePage showToast={showToast} />}
           {activeTab === 'project-management' && <ProjectManagementPage showToast={showToast} />}
           {activeTab === 'visitor-management' && <VisitorManagementPage showToast={showToast} />}
-          {activeTab === 'parking-management' && <ParkingManagementPage showToast={showToast} />}
+          {activeTab === 'parking-management' && <ParkingManagementPage showToast={showToast} employees={employees} />}
         </main>
 
         {/* Footer */}

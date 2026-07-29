@@ -298,18 +298,29 @@ export const ShiftOverview: React.FC = () => {
 /*                            5. CALENDAR WIDGET                              */
 /* -------------------------------------------------------------------------- */
 export const CalendarWidget: React.FC = () => {
-  // Simulating July 2026 Monthly Calendar starting on Wednesday
-  const daysInMonth = 31;
-  const startDayOffset = 3; // Wednesday
+  const currentDate = new Date();
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const todayDate = currentDate.getDate();
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const startDayOffset = new Date(year, month, 1).getDay();
+
   const blankDays = Array(startDayOffset).fill(null);
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
   // Mark types
   const getDayMarker = (day: number) => {
-    if (day === 28) return 'today'; // Today is July 28
-    if ([5, 12, 19, 26].includes(day)) return 'holiday'; // Sundays
-    if ([8, 22].includes(day)) return 'leave'; // Leaves
-    if ([15].includes(day)) return 'event'; // Event
+    if (day === todayDate) return 'today';
+    const dayOfWeek = new Date(year, month, day).getDay();
+    if (dayOfWeek === 5) return 'holiday'; // Fridays
+    if ([8, 22].includes(day)) return 'leave';
+    if ([15].includes(day)) return 'event';
     return null;
   };
 
@@ -320,7 +331,7 @@ export const CalendarWidget: React.FC = () => {
           Calendar Widget
         </h3>
         <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
-          July 2026
+          {monthNames[month]} {year}
         </span>
       </div>
 
