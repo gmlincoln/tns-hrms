@@ -25,11 +25,62 @@ export const Navbar: React.FC<NavbarProps> = ({
   showToast,
   onLogout,
 }) => {
+  // Helper to format Bangladesh Date (YYYY-MM-DD)
+  const getBDDateString = (date: Date = new Date()) => {
+    try {
+      const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Dhaka',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      return formatter.format(date);
+    } catch (e) {
+      return '2026-07-29';
+    }
+  };
+
+  // Helper to format Bangladesh Time and Date for display
+  const getBDDateTimeString = (date: Date = new Date()) => {
+    try {
+      const timeFormatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Dhaka',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+      const dateFormatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Dhaka',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+      return {
+        time: timeFormatter.format(date),
+        date: dateFormatter.format(date)
+      };
+    } catch (e) {
+      return {
+        time: date.toLocaleTimeString(),
+        date: date.toLocaleDateString()
+      };
+    }
+  };
+
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState('2026-07-28');
+  const [selectedDate, setSelectedDate] = useState(() => getBDDateString());
+  const [bdDateTime, setBdDateTime] = useState(() => getBDDateTimeString());
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setBdDateTime(getBDDateTimeString());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Close all other dropdowns helper
   const closeAllDropdownsExcept = (dropdownSetter: (val: boolean) => void) => {
@@ -86,13 +137,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="h-18 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-20 px-6 flex items-center justify-between transition-colors duration-300">
       {/* Left Search Bar */}
-      <div className="relative w-72 md:w-96">
+      <div className="relative w-48 md:w-64">
         <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
           <Search size={18} />
         </span>
         <input
           type="text"
-          placeholder="Search employee by name or ID..."
+          placeholder="Search employee..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-10 pr-4 py-2 text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-slate-200 transition-all"
@@ -116,8 +167,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={() => quickActionsOpen ? setQuickActionsOpen(false) : closeAllDropdownsExcept(setQuickActionsOpen)}
             className={`p-2 rounded-xl transition-all relative ${quickActionsOpen
-                ? 'bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400'
-                : 'text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400'
+              : 'text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             title="Quick Actions"
           >
@@ -171,8 +222,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={() => notificationsOpen ? setNotificationsOpen(false) : closeAllDropdownsExcept(setNotificationsOpen)}
             className={`p-2 rounded-xl transition-all relative ${notificationsOpen
-                ? 'bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400'
-                : 'text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400'
+              : 'text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             title="Notifications"
           >
@@ -229,8 +280,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={() => messagesOpen ? setMessagesOpen(false) : closeAllDropdownsExcept(setMessagesOpen)}
             className={`p-2 rounded-xl transition-all relative ${messagesOpen
-                ? 'bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400'
-                : 'text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400'
+              : 'text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             title="Messages"
           >
@@ -333,15 +384,26 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* Date Picker Input */}
-        <div className="relative flex items-center border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 bg-slate-55 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-          <Calendar size={14} className="mr-2 text-indigo-500" />
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => { setSelectedDate(e.target.value); showToast(`Date updated to: ${e.target.value}`, 'success'); }}
-            className="text-xs font-semibold bg-transparent border-none outline-none focus:ring-0 cursor-pointer"
-          />
+        {/* Unified Bangladesh Clock and Date Picker */}
+        <div className="hidden sm:flex items-center flex-nowrap gap-3 px-3.5 py-1.5 bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 rounded-xl transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-600 whitespace-nowrap">
+          {/* Live Clock Time */}
+          <div className="flex items-center flex-nowrap gap-1.5 border-r border-slate-200 dark:border-slate-700/80 pr-3">
+            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse flex-shrink-0" title="Bangladesh Time (Live)"></span>
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-200 tabular-nums select-none whitespace-nowrap">
+              {bdDateTime.time}
+            </span>
+          </div>
+
+          {/* Date Picker Input */}
+          <div className="flex items-center flex-nowrap text-slate-600 dark:text-slate-300">
+            <Calendar size={14} className="mr-2 text-indigo-500 flex-shrink-0" />
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => { setSelectedDate(e.target.value); showToast(`Date updated to: ${e.target.value}`, 'success'); }}
+              className="text-xs font-semibold bg-transparent border-none outline-none focus:ring-0 cursor-pointer p-0 w-24 text-slate-700 dark:text-slate-200 dark:[color-scheme:dark] whitespace-nowrap"
+            />
+          </div>
         </div>
       </div>
     </header>
