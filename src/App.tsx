@@ -76,7 +76,7 @@ export default function App() {
     { id: '124', name: 'Md Riyadul Islam Ratul', role: 'Trainer', dept: 'Training', email: 'ratul@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?q=80&w=256&h=256&fit=crop' },
     { id: '125', name: 'Md.Kawsar Uddin', role: 'Communication Officer', dept: 'PR & Communications', email: 'kawsar@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?q=80&w=256&h=256&fit=crop' },
     { id: '126', name: 'Sayad Golam Morshed', role: 'Admission Officer', dept: 'Education', email: 'morshed@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?q=80&w=256&h=256&fit=crop' },
-    { id: '127', name: 'Labibul Hasan', role: '', dept: 'HR & Admin', email: 'labibul@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=256&h=256&fit=crop' },
+    { id: '127', name: 'Labibul Hasan', role: 'MTO', dept: 'HR & Admin', email: 'labibul@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=256&h=256&fit=crop' },
     { id: '128', name: 'Md Abdur Rahim', role: 'Peon', dept: 'Support Department', email: 'rahim@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=256&h=256&fit=crop' },
     { id: '129', name: 'Md. Labib Hasan', role: 'Office Assistant', dept: 'HR & Admin', email: 'labib.oa@touchandsolve.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=256&h=256&fit=crop' },
   ]);
@@ -94,6 +94,7 @@ export default function App() {
       if (lowerRole.includes('developer') || lowerRole.includes('engineer')) return 8;
       if (lowerRole.includes('designer') || lowerRole.includes('trainer') || lowerRole.includes('teacher')) return 9;
       if (lowerRole.includes('executive')) return 10;
+      if (lowerRole.includes('mto') || lowerRole.includes('management trainee')) return 10.5;
       if (lowerRole.includes('officer') || lowerRole.includes('assistant')) return 11;
       if (lowerRole.includes('peon')) return 12;
       return 100;

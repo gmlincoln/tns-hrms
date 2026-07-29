@@ -45,6 +45,7 @@ export const AttendancePage: React.FC<WorkablePageProps> = ({ showToast, employe
       if (lowerRole.includes('developer') || lowerRole.includes('engineer')) return 6;
       if (lowerRole.includes('designer') || lowerRole.includes('trainer') || lowerRole.includes('teacher')) return 7;
       if (lowerRole.includes('executive')) return 8;
+      if (lowerRole.includes('mto') || lowerRole.includes('management trainee')) return 8.5;
       if (lowerRole.includes('officer') || lowerRole.includes('assistant')) return 9;
       if (lowerRole.includes('peon')) return 10;
       return 100;
@@ -1627,10 +1628,10 @@ export const AttendanceSheetPage: React.FC<WorkablePageProps> = ({ showToast, em
           <table className="w-full text-left text-xs border border-collapse divide-y divide-slate-100 dark:divide-slate-750 dark:border-slate-700">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-900 text-slate-500 text-[10px] uppercase">
-                <th className="py-2.5 px-3 font-semibold border-r dark:border-slate-700 min-w-[180px] align-middle text-slate-600 dark:text-slate-300 sticky left-0 bg-slate-50 dark:bg-slate-900 z-20">
+                <th className="py-2.5 px-3 font-semibold border-r dark:border-slate-700 w-[180px] min-w-[180px] max-w-[180px] align-middle text-slate-600 dark:text-slate-300 sticky left-0 bg-slate-50 dark:bg-slate-900 z-20">
                   Employee Details
                 </th>
-                <th className="py-2.5 px-3 font-semibold border-r dark:border-slate-700 min-w-[110px] align-middle text-slate-600 dark:text-slate-300 text-center">
+                <th className="py-2.5 px-3 font-semibold border-r dark:border-slate-700 w-[110px] min-w-[110px] max-w-[110px] align-middle text-slate-600 dark:text-slate-300 text-center sticky left-[180px] bg-slate-50 dark:bg-slate-900 z-20">
                   Total Attended
                 </th>
                 {dateList.map((dt) => (
@@ -1649,11 +1650,11 @@ export const AttendanceSheetPage: React.FC<WorkablePageProps> = ({ showToast, em
             <tbody className="divide-y divide-slate-100 dark:divide-slate-750">
               {records.map((r, idx) => (
                 <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10 text-slate-700 dark:text-slate-300">
-                  <td className="py-2.5 px-3 border-r dark:border-slate-700 sticky left-0 bg-white dark:bg-slate-800 z-10 whitespace-nowrap shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                  <td className="py-2.5 px-3 border-r dark:border-slate-700 sticky left-0 bg-white dark:bg-slate-800 z-10 w-[180px] min-w-[180px] max-w-[180px] whitespace-nowrap">
                     <div className="font-bold text-slate-800 dark:text-slate-200">{r.name}</div>
                     <div className="text-[9px] text-indigo-500 font-semibold mt-0.5">#{r.id}</div>
                   </td>
-                  <td className="py-2.5 px-3 border-r dark:border-slate-700 text-center font-bold text-slate-800 dark:text-slate-200 bg-slate-50/30 dark:bg-slate-900/10">
+                  <td className="py-2.5 px-3 border-r dark:border-slate-700 text-center font-bold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 sticky left-[180px] z-10 w-[110px] min-w-[110px] max-w-[110px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                     <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">
                       {r.status.filter(st => st === 'P' || st === 'L').length}
                     </span>
