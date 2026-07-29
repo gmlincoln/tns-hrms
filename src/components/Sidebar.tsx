@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, BarChart3, 
   UserCheck, CalendarDays, CalendarX, Clock, 
   Smartphone, Settings, FolderKanban, UserPlus, 
-  Car, ChevronLeft, ChevronRight, Fingerprint, ChevronDown, ChevronUp 
+  Car, ChevronLeft, ChevronRight, Fingerprint, ChevronDown, ChevronUp, X
 } from 'lucide-react';
 import { TouchAndSolveLogo } from './TouchAndSolveLogo';
 
@@ -12,6 +12,8 @@ interface SidebarProps {
   setActiveTab: (tab: string) => void;
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
+  isMobileSidebarOpen?: boolean;
+  setIsMobileSidebarOpen?: (open: boolean) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -19,6 +21,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setActiveTab,
   isCollapsed,
   setIsCollapsed,
+  isMobileSidebarOpen = false,
+  setIsMobileSidebarOpen,
 }) => {
   const [isAttendanceOpen, setIsAttendanceOpen] = useState(() => activeTab.startsWith('attendance'));
   const [isEmployeeOpen, setIsEmployeeOpen] = useState(() => activeTab === 'employees' || activeTab.startsWith('employee-'));
@@ -70,9 +74,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside 
-      className={`fixed top-0 left-0 h-screen bg-[#1E1B3A] text-slate-300 z-30 transition-all duration-300 ease-in-out border-r border-[#2d2854] flex flex-col ${
-        isCollapsed ? 'w-20' : 'w-64'
-      }`}
+      className={`fixed top-0 left-0 h-screen bg-[#1E1B3A] text-slate-300 z-40 transition-all duration-300 ease-in-out border-r border-[#2d2854] flex flex-col lg:translate-x-0 ${
+        isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      } ${
+        isCollapsed ? 'lg:w-20' : 'lg:w-64'
+      } w-64`}
     >
       {/* Brand Header */}
       <div className="p-5 flex items-center justify-between border-b border-[#2d2854] h-18">
@@ -82,13 +88,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
             e.preventDefault();
             setActiveTab('dashboard');
             window.history.pushState(null, '', '/');
+            if (setIsMobileSidebarOpen) setIsMobileSidebarOpen(false);
           }}
         />
         <button 
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={() => {
+            if (setIsMobileSidebarOpen && window.innerWidth < 1024) {
+              setIsMobileSidebarOpen(false);
+            } else {
+              setIsCollapsed(!isCollapsed);
+            }
+          }}
           className={`p-1.5 rounded-lg bg-[#2d2854] hover:bg-indigo-600 text-white transition-colors duration-200 ${isCollapsed ? 'mx-auto mt-2' : ''}`}
         >
-          {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          <span className="lg:hidden"><X size={16} /></span>
+          <span className="hidden lg:inline">{isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}</span>
         </button>
       </div>
 
@@ -148,7 +162,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       return (
                         <button
                           key={sub.id}
-                          onClick={() => setActiveTab(sub.id)}
+                          onClick={() => {
+                            setActiveTab(sub.id);
+                            if (setIsMobileSidebarOpen) setIsMobileSidebarOpen(false);
+                          }}
                           className={`w-full flex items-center px-4 py-2 rounded-lg text-left text-xs font-semibold transition-all duration-205 ${
                             isSubActive 
                               ? 'text-indigo-400 bg-indigo-500/10 font-bold border-l-2 border-indigo-500 pl-3' 
@@ -169,7 +186,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           return (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                setActiveTab(item.id);
+                if (setIsMobileSidebarOpen) setIsMobileSidebarOpen(false);
+              }}
               className={`w-full flex items-center gap-3.5 px-3.5 py-3 rounded-xl transition-all duration-200 text-left font-medium text-sm group relative ${
                 isActive 
                   ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' 

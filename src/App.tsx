@@ -42,6 +42,7 @@ export default function App() {
     return validTabs.includes(hash) ? hash : 'dashboard';
   });
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('theme') === 'dark' || 
       (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -319,12 +320,22 @@ export default function App() {
         setActiveTab={setActiveTab}
         isCollapsed={isSidebarCollapsed}
         setIsCollapsed={setIsSidebarCollapsed}
+        isMobileSidebarOpen={isMobileSidebarOpen}
+        setIsMobileSidebarOpen={setIsMobileSidebarOpen}
       />
+
+      {/* Backdrop overlay for mobile sidebar */}
+      {isMobileSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 lg:hidden transition-opacity duration-300"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
 
       {/* Main Content Area */}
       <div 
-        className={`flex-1 flex flex-col min-h-screen min-w-0 overflow-x-hidden transition-all duration-300 ${
-          isSidebarCollapsed ? 'ml-20' : 'ml-64'
+        className={`flex-1 flex flex-col min-h-screen min-w-0 overflow-x-hidden transition-all duration-300 ml-0 ${
+          isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
         }`}
       >
         {/* Top Navbar */}
@@ -345,6 +356,7 @@ export default function App() {
             sessionStorage.setItem('isLoggedIn', 'false');
             showToast('Signed out successfully.', 'info'); 
           }}
+          toggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         />
 
         {/* Dashboard Pages */}

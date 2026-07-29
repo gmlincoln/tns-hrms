@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import {
   Search, Phone, Bell, MessageSquare, LayoutGrid, Calendar,
   ChevronDown, User, LogOut, Settings, Moon, Sun, Plus,
-  Users, BarChart3, ShieldAlert, CheckCircle2
+  Users, BarChart3, ShieldAlert, CheckCircle2, Menu, ArrowLeft, X
 } from 'lucide-react';
+import logoImg from '../assets/logo.png';
 
 
 interface NavbarProps {
@@ -14,6 +15,7 @@ interface NavbarProps {
   setActiveTab: (tab: string) => void;
   showToast: (msg: string, type?: 'success' | 'info' | 'warning') => void;
   onLogout: () => void;
+  toggleMobileSidebar?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -24,6 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   showToast,
   onLogout,
+  toggleMobileSidebar,
 }) => {
   // Helper to format Bangladesh Date (YYYY-MM-DD)
   const getBDDateString = (date: Date = new Date()) => {
@@ -72,6 +75,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
+  const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const [selectedDate, setSelectedDate] = useState(() => getBDDateString());
   const [bdDateTime, setBdDateTime] = useState(() => getBDDateTimeString());
 
@@ -134,24 +139,89 @@ export const Navbar: React.FC<NavbarProps> = ({
   const unreadNotificationsCount = notifications.filter(n => !n.read).length;
   const unreadMessagesCount = messages.filter(m => !m.read).length;
 
+  if (isMobileSearchExpanded) {
+    return (
+      <header className="h-18 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-20 px-4 flex items-center gap-3 transition-colors duration-300">
+        <button
+          onClick={() => setIsMobileSearchExpanded(false)}
+          className="p-2 rounded-xl text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none shrink-0"
+          title="Back"
+        >
+          <ArrowLeft size={20} />
+        </button>
+        <div className="relative flex-1">
+          <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <Search size={18} />
+          </span>
+          <input
+            type="text"
+            placeholder="Search employee..."
+            autoFocus
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-10 py-2 text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-slate-200"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-650 dark:hover:text-slate-350"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      </header>
+    );
+  }
+
   return (
-    <header className="h-18 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-20 px-6 flex items-center justify-between transition-colors duration-300">
-      {/* Left Search Bar */}
-      <div className="relative w-48 md:w-64">
-        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-          <Search size={18} />
-        </span>
-        <input
-          type="text"
-          placeholder="Search employee..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-slate-200 transition-all"
-        />
+    <header className="h-18 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-20 px-4 md:px-6 flex items-center justify-between transition-colors duration-300">
+      {/* Left Menu & Brand/Search for Desktop */}
+      <div className="flex items-center gap-2 flex-1 md:flex-initial">
+        {toggleMobileSidebar && (
+          <button
+            onClick={toggleMobileSidebar}
+            className="p-2 rounded-xl text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden focus:outline-none shrink-0"
+            title="Toggle Menu"
+          >
+            <Menu size={20} />
+          </button>
+        )}
+        
+        {/* Brand label/logo shorthand on mobile */}
+        <div className="flex items-center gap-2 lg:hidden pr-2">
+          <img src={logoImg} alt="TNS Logo" className="w-7 h-7 shrink-0 object-contain" />
+          <span className="text-xs sm:text-sm font-extrabold font-manrope text-slate-800 dark:text-white tracking-tight whitespace-nowrap">
+            TNS-HRMS
+          </span>
+        </div>
+
+        {/* Desktop Search Bar (Hidden on Mobile) */}
+        <div className="relative hidden md:block w-48 lg:w-64">
+          <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <Search size={16} />
+          </span>
+          <input
+            type="text"
+            placeholder="Search employee..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-slate-200 transition-all"
+          />
+        </div>
       </div>
 
       {/* Right Content Options */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        {/* Mobile Search Trigger Icon */}
+        <button
+          onClick={() => setIsMobileSearchExpanded(true)}
+          className="p-2 rounded-xl text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 md:hidden"
+          title="Search"
+        >
+          <Search size={18} />
+        </button>
+
         {/* Phone Shortcut */}
         <a
           href="tel:+8801958227213"
@@ -162,8 +232,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         </a>
 
 
-        {/* Quick Actions Dropdown */}
-        <div className="relative">
+        {/* Quick Actions Dropdown (Hidden on Mobile/Tablet) */}
+        <div className="relative hidden md:block">
           <button
             onClick={() => quickActionsOpen ? setQuickActionsOpen(false) : closeAllDropdownsExcept(setQuickActionsOpen)}
             className={`p-2 rounded-xl transition-all relative ${quickActionsOpen
@@ -275,8 +345,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* Messages Dropdown */}
-        <div className="relative">
+        {/* Messages Dropdown (Hidden on Mobile/Tablet) */}
+        <div className="relative hidden md:block">
           <button
             onClick={() => messagesOpen ? setMessagesOpen(false) : closeAllDropdownsExcept(setMessagesOpen)}
             className={`p-2 rounded-xl transition-all relative ${messagesOpen
@@ -339,11 +409,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center gap-2.5 text-left focus:outline-none group"
             title="User Profile"
           >
-            <img
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&h=256&fit=crop"
-              alt="Golam Maula Lincoln"
-              className="w-9 h-9 rounded-xl object-cover ring-2 ring-indigo-500/20 group-hover:ring-indigo-500/40 transition-all"
-            />
+            {imageError ? (
+              <div className="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center text-indigo-650 dark:text-indigo-400 font-bold text-xs ring-2 ring-indigo-500/20 group-hover:ring-indigo-500/40 transition-all shrink-0">
+                GML
+              </div>
+            ) : (
+              <img
+                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&h=256&fit=crop"
+                alt="Golam Maula Lincoln"
+                onError={() => setImageError(true)}
+                className="w-9 h-9 rounded-xl object-cover ring-2 ring-indigo-500/20 group-hover:ring-indigo-500/40 transition-all shrink-0"
+              />
+            )}
             <div className="hidden md:flex flex-col">
               <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 leading-tight">
                 Golam Maula Lincoln
@@ -385,7 +462,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Unified Bangladesh Clock and Date Picker */}
-        <div className="hidden sm:flex items-center flex-nowrap gap-3 px-3.5 py-1.5 bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 rounded-xl transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-600 whitespace-nowrap">
+        <div className="hidden md:flex items-center flex-nowrap gap-3 px-3.5 py-1.5 bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 rounded-xl transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-600 whitespace-nowrap">
           {/* Live Clock Time */}
           <div className="flex items-center flex-nowrap gap-1.5 border-r border-slate-200 dark:border-slate-700/80 pr-3">
             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse flex-shrink-0" title="Bangladesh Time (Live)"></span>
