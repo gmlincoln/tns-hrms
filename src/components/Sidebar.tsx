@@ -132,7 +132,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   }}
                   className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl transition-all duration-200 text-left font-medium text-sm group relative ${
                     isSubItemActive && !isOpen
-                      ? 'bg-indigo-650/40 text-white border border-indigo-500/25'
+                      ? 'bg-indigo-600/40 text-white border border-indigo-500/25'
                       : isOpen && isSubItemActive
                       ? 'bg-[#8B5CF6] text-white shadow-lg shadow-purple-600/30'
                       : 'hover:bg-[#2d2854] hover:text-white text-slate-400'

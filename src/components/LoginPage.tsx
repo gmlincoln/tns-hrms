@@ -103,7 +103,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               <input
                 type="checkbox"
                 defaultChecked
-                className="rounded border-[#2d2854] bg-slate-950/40 text-indigo-650 focus:ring-indigo-500"
+                className="rounded border-[#2d2854] bg-slate-950/40 text-indigo-600 focus:ring-indigo-500"
               />
               <span className="text-[11px] font-medium text-slate-400">Remember session</span>
             </label>
@@ -122,7 +122,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 mt-2 bg-indigo-650 hover:bg-indigo-600 active:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-indigo-950/50 flex items-center justify-center gap-2 hover:scale-[1.01]"
+            className="w-full py-3 mt-2 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-indigo-950/50 flex items-center justify-center gap-2 hover:scale-[1.01]"
           >
             {isLoading ? (
               <>

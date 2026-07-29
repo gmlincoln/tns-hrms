@@ -213,7 +213,28 @@ export const AttendancePage: React.FC<WorkablePageProps> = ({ showToast, employe
 /* ========================================================================== */
 /*                             2. OCCUPANCY                                   */
 /* ========================================================================== */
-export const OccupancyPage: React.FC<WorkablePageProps> = ({ showToast }) => {
+export const OccupancyPage: React.FC<WorkablePageProps> = ({ showToast, employees = [] }) => {
+  const [activeZone, setActiveZone] = useState<string | null>(null);
+  
+  const [desks, setDesks] = useState([
+    { id: 'Seat-01', status: 'Occupied', employee: 'Golam Maula Lincoln', role: 'Site Administrator', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&h=256&fit=crop' },
+    { id: 'Seat-02', status: 'Free', employee: '-', role: '-', avatar: '' },
+    { id: 'Seat-03', status: 'Free', employee: '-', role: '-', avatar: '' },
+    { id: 'Seat-04', status: 'Occupied', employee: 'Labibul Hasan', role: 'MTO', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=256&h=256&fit=crop' },
+    { id: 'Seat-05', status: 'Free', employee: '-', role: '-', avatar: '' },
+    { id: 'Seat-06', status: 'Occupied', employee: 'Md Riyadul Islam Ratul', role: 'Trainer', avatar: 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?q=80&w=256&h=256&fit=crop' },
+    { id: 'Seat-07', status: 'Occupied', employee: 'Md.Kawsar Uddin', role: 'Communication Officer', avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?q=80&w=256&h=256&fit=crop' },
+    { id: 'Seat-08', status: 'Free', employee: '-', role: '-', avatar: '' },
+    { id: 'Seat-09', status: 'Occupied', employee: 'Sayad Golam Morshed', role: 'Admission Officer', avatar: 'https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?q=80&w=256&h=256&fit=crop' },
+    { id: 'Seat-10', status: 'Free', employee: '-', role: '-', avatar: '' },
+    { id: 'Seat-11', status: 'Free', employee: '-', role: '-', avatar: '' },
+    { id: 'Seat-12', status: 'Occupied', employee: 'Md Abdur Rahim', role: 'Peon', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=256&h=256&fit=crop' },
+  ]);
+
+  const [selectedSeatId, setSelectedSeatId] = useState<string | null>(null);
+  const [selectedEmployeeName, setSelectedEmployeeName] = useState('');
+  const [activeDetailSeat, setActiveDetailSeat] = useState<any>(null);
+
   const sections = [
     { name: 'Floor 1 - HR & Admin', capacity: 30, occupied: 15, color: 'bg-emerald-500' },
     { name: 'Floor 2 - Engineering', capacity: 50, occupied: 45, color: 'bg-indigo-500' },
@@ -221,6 +242,271 @@ export const OccupancyPage: React.FC<WorkablePageProps> = ({ showToast }) => {
     { name: 'Meeting Room Alpha', capacity: 10, occupied: 8, color: 'bg-rose-500' },
     { name: 'Cafeteria', capacity: 60, occupied: 22, color: 'bg-blue-500' }
   ];
+
+  const handleAllocate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSeatId || !selectedEmployeeName) return;
+    const employeeObj = employees.find(emp => emp.name === selectedEmployeeName);
+    
+    setDesks(prev => prev.map(d => {
+      if (d.id === selectedSeatId) {
+        return {
+          ...d,
+          status: 'Occupied',
+          employee: selectedEmployeeName,
+          role: employeeObj ? employeeObj.role : 'Staff',
+          avatar: employeeObj ? employeeObj.avatar : ''
+        };
+      }
+      return d;
+    }));
+
+    showToast(`Seat ${selectedSeatId} successfully allocated to ${selectedEmployeeName}!`, 'success');
+    setSelectedEmployeeName('');
+    setSelectedSeatId(null);
+  };
+
+  const handleVacate = (id: string) => {
+    setDesks(prev => prev.map(d => {
+      if (d.id === id) {
+        return {
+          ...d,
+          status: 'Free',
+          employee: '-',
+          role: '-',
+          avatar: ''
+        };
+      }
+      return d;
+    }));
+    showToast(`Seat ${id} is now available.`, 'info');
+    setActiveDetailSeat(null);
+    setSelectedSeatId(null);
+  };
+
+  const handleSeatClick = (s: any) => {
+    setSelectedSeatId(s.id);
+    if (s.status === 'Free') {
+      setActiveDetailSeat(null);
+    } else {
+      setActiveDetailSeat(s);
+    }
+  };
+
+  if (activeZone) {
+    const occupiedSeats = desks.filter(d => d.status === 'Occupied').length;
+    const totalSeats = desks.length;
+    const percentage = Math.round((occupiedSeats / totalSeats) * 100);
+
+    return (
+      <div className="space-y-6 animate-in fade-in duration-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Interactive Seat Plan</span>
+            <h1 className="text-2xl font-extrabold font-manrope text-slate-800 dark:text-white mt-0.5">{activeZone}</h1>
+          </div>
+          <button 
+            onClick={() => { setActiveZone(null); setSelectedSeatId(null); setActiveDetailSeat(null); }}
+            className="px-4 py-2 bg-slate-50 hover:bg-slate-105 dark:bg-slate-800 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 transition-all self-start sm:self-auto"
+          >
+            ➔ Go Back to Zones
+          </button>
+        </div>
+
+        {/* Capacity Header */}
+        <div className="bg-gradient-to-r from-emerald-550 to-teal-600 text-white rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h3 className="font-extrabold text-base">Seat Density & Allocation Map</h3>
+            <p className="text-xs text-emerald-100 mt-1">Select empty desks (green) to assign active workspace layouts</p>
+          </div>
+          <div className="flex items-center gap-4 w-full sm:w-auto">
+            <div className="text-right hidden sm:block">
+              <span className="text-lg font-black">{occupiedSeats} / {totalSeats}</span>
+              <span className="text-[10px] block text-emerald-100 font-bold uppercase tracking-wider">Seats Taken</span>
+            </div>
+            <div className="flex-1 sm:w-36 bg-emerald-950/40 h-2.5 rounded-full overflow-hidden border border-emerald-400/20">
+              <div className="bg-white h-full rounded-full transition-all duration-500" style={{ width: `${percentage}%` }}></div>
+            </div>
+            <span className="font-black text-sm">{percentage}% Full</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          {/* Seating Allocation Control Panel */}
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-sm lg:col-span-1 space-y-4">
+            <div className="flex items-center justify-between border-b pb-3 border-slate-100 dark:border-slate-700">
+              <h3 className="font-bold text-sm text-slate-800 dark:text-white">Desk Inspector</h3>
+              {selectedSeatId && (
+                <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 rounded-lg text-[10px] font-bold">
+                  {selectedSeatId}
+                </span>
+              )}
+            </div>
+
+            {selectedSeatId ? (
+              activeDetailSeat ? (
+                /* Occupied seat details */
+                <div className="space-y-4 animate-in fade-in duration-200">
+                  <div className="flex flex-col items-center text-center p-4 bg-slate-50 dark:bg-slate-900 border border-slate-150 dark:border-slate-750 rounded-xl">
+                    <img 
+                      src={activeDetailSeat.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256&h=256&fit=crop"} 
+                      className="w-16 h-16 rounded-full object-cover border-2 border-indigo-400 shadow-sm"
+                      alt={activeDetailSeat.employee} 
+                    />
+                    <h4 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 mt-3">{activeDetailSeat.employee}</h4>
+                    <p className="text-[10px] font-extrabold text-indigo-500 mt-1 uppercase tracking-widest">{activeDetailSeat.role}</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">{activeZone}</p>
+                  </div>
+                  <button 
+                    onClick={() => handleVacate(activeDetailSeat.id)}
+                    className="w-full py-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-955/20 text-rose-600 dark:text-rose-450 border border-rose-100 dark:border-rose-900/30 rounded-xl text-xs font-bold transition-all shadow-sm"
+                  >
+                    Vacate Desk / Free Up Seat
+                  </button>
+                </div>
+              ) : (
+                /* Free seat allocation form */
+                <form onSubmit={handleAllocate} className="space-y-4 animate-in fade-in duration-200">
+                  <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl text-center text-xs text-emerald-800 dark:text-emerald-300">
+                    Desk <strong>{selectedSeatId}</strong> is currently empty. Allocate it below.
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase">Select Employee</label>
+                    <select 
+                      value={selectedEmployeeName}
+                      onChange={e => setSelectedEmployeeName(e.target.value)}
+                      className="w-full p-2.5 text-xs border dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-slate-205 font-medium"
+                      required
+                    >
+                      <option value="">-- Choose employee --</option>
+                      {employees.map(emp => (
+                        <option key={emp.id} value={emp.name}>{emp.name} ({emp.dept})</option>
+                      ))}
+                    </select>
+                  </div>
+                  <button 
+                    type="submit" 
+                    className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+                  >
+                    Allocate Desk
+                  </button>
+                </form>
+              )
+            ) : (
+              <div className="text-center py-8 text-xs text-slate-450 dark:text-slate-500">
+                Click any desk in the floor map to inspect details or assign a seat.
+              </div>
+            )}
+          </div>
+
+          {/* Interactive Visual Floor Seating Plan Map */}
+          <div className="bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-inner lg:col-span-2 space-y-4">
+            <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider text-slate-400 select-none">
+              <span>Seating Layout Map</span>
+              <div className="flex items-center gap-3">
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-emerald-500" /> Free</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-indigo-500" /> Selected</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-slate-400" /> Occupied</span>
+              </div>
+            </div>
+
+            <div className="border border-dashed border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-950/20 p-6 rounded-2xl space-y-6 relative overflow-hidden select-none">
+              {/* Upper Desk Cluster */}
+              <div className="grid grid-cols-6 gap-3">
+                {desks.slice(0, 6).map(d => {
+                  const isSelected = selectedSeatId === d.id;
+                  const isOccupied = d.status === 'Occupied';
+                  return (
+                    <button
+                      key={d.id}
+                      type="button"
+                      onClick={() => handleSeatClick(d)}
+                      className={`flex flex-col items-center justify-between p-2 h-20 rounded-xl border-2 transition-all relative ${
+                        isOccupied 
+                          ? 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-100/50' 
+                          : isSelected 
+                            ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-500 shadow-md shadow-indigo-500/10'
+                            : 'bg-emerald-50/20 dark:bg-emerald-950/5 border-dashed border-emerald-250 dark:border-emerald-900/60 hover:border-emerald-400'
+                      }`}
+                    >
+                      <span className="text-[8px] font-extrabold text-slate-400 absolute top-1 left-1.5">{d.id.replace('Seat-', '')}</span>
+                      <div className="my-auto flex flex-col items-center gap-1.5">
+                        {isOccupied ? (
+                          <>
+                            <img 
+                              src={d.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256&h=256&fit=crop"} 
+                              className="w-7 h-7 rounded-full object-cover border border-slate-300 dark:border-slate-600" 
+                              alt="" 
+                            />
+                            <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-350 line-clamp-1 max-w-[50px]">{d.employee.split(' ')[0]}</span>
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-7 h-7 rounded-full border border-dashed border-emerald-350 flex items-center justify-center text-emerald-500">
+                              +
+                            </div>
+                            <span className="text-[8px] font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-widest">Free</span>
+                          </>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Central Aisle / Pathway */}
+              <div className="h-6 bg-slate-50 dark:bg-slate-900/40 border-y border-dashed border-slate-200 dark:border-slate-800 rounded-lg flex items-center justify-center">
+                <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Central Aisle Corridor</span>
+              </div>
+
+              {/* Lower Desk Cluster */}
+              <div className="grid grid-cols-6 gap-3">
+                {desks.slice(6, 12).map(d => {
+                  const isSelected = selectedSeatId === d.id;
+                  const isOccupied = d.status === 'Occupied';
+                  return (
+                    <button
+                      key={d.id}
+                      type="button"
+                      onClick={() => handleSeatClick(d)}
+                      className={`flex flex-col items-center justify-between p-2 h-20 rounded-xl border-2 transition-all relative ${
+                        isOccupied 
+                          ? 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-100/50' 
+                          : isSelected 
+                            ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-500 shadow-md shadow-indigo-500/10'
+                            : 'bg-emerald-50/20 dark:bg-emerald-950/5 border-dashed border-emerald-250 dark:border-emerald-900/60 hover:border-emerald-400'
+                      }`}
+                    >
+                      <span className="text-[8px] font-extrabold text-slate-400 absolute top-1 left-1.5">{d.id.replace('Seat-', '')}</span>
+                      <div className="my-auto flex flex-col items-center gap-1.5">
+                        {isOccupied ? (
+                          <>
+                            <img 
+                              src={d.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=256&h=256&fit=crop"} 
+                              className="w-7 h-7 rounded-full object-cover border border-slate-300 dark:border-slate-600" 
+                              alt="" 
+                            />
+                            <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-350 line-clamp-1 max-w-[50px]">{d.employee.split(' ')[0]}</span>
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-7 h-7 rounded-full border border-dashed border-emerald-350 flex items-center justify-center text-emerald-500">
+                              +
+                            </div>
+                            <span className="text-[8px] font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-widest">Free</span>
+                          </>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -249,7 +535,7 @@ export const OccupancyPage: React.FC<WorkablePageProps> = ({ showToast }) => {
 
               {/* Progress bar */}
               <div className="space-y-1.5">
-                <div className="w-full bg-slate-100 dark:bg-slate-750 h-2 rounded-full overflow-hidden">
+                <div className="w-full bg-slate-100 dark:bg-slate-755 h-2 rounded-full overflow-hidden">
                   <div className={`h-full ${sec.color} rounded-full`} style={{ width: `${percentage}%` }} />
                 </div>
                 <div className="flex items-center justify-between text-[10px] font-bold text-slate-400">
@@ -259,7 +545,7 @@ export const OccupancyPage: React.FC<WorkablePageProps> = ({ showToast }) => {
               </div>
 
               <button 
-                onClick={() => showToast(`Opening interactive desk map for ${sec.name}`)}
+                onClick={() => setActiveZone(sec.name)}
                 className="w-full py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition-all text-slate-700 dark:text-slate-300"
               >
                 View Seat Plan Map
@@ -1094,7 +1380,7 @@ export const VisitorManagementPage: React.FC<WorkablePageProps> = ({ showToast }
 /* ========================================================================== */
 export const ParkingManagementPage: React.FC<WorkablePageProps> = ({ showToast, employees = [] }) => {
   const [slots, setSlots] = useState([
-    { id: 'P-01', type: 'Car', status: 'Occupied', vehicle: 'DHK Metro GA 11-2093', employee: 'Asif Aminur Rashid' },
+    { id: 'P-01', type: 'Car', status: 'Free', vehicle: '-', employee: '-' },
     { id: 'P-02', type: 'Car', status: 'Free', vehicle: '-', employee: '-' },
     { id: 'P-03', type: 'Bike', status: 'Occupied', vehicle: 'DHK Metro HA 45-1229', employee: 'Kazi Fahmid Hassan Rafi' },
     { id: 'P-04', type: 'Car', status: 'Free', vehicle: '-', employee: '-' },
@@ -2029,7 +2315,7 @@ export const RequestAttendancePage: React.FC<WorkablePageProps> = ({ showToast }
                   name="type"
                   checked={reqType === 'IN'}
                   onChange={() => setReqType('IN')}
-                  className="text-indigo-650 focus:ring-indigo-500"
+                  className="text-indigo-600 focus:ring-indigo-500"
                 />
                 <span>PUNCH IN (Check-In)</span>
               </label>
@@ -2039,7 +2325,7 @@ export const RequestAttendancePage: React.FC<WorkablePageProps> = ({ showToast }
                   name="type"
                   checked={reqType === 'OUT'}
                   onChange={() => setReqType('OUT')}
-                  className="text-indigo-650 focus:ring-indigo-500"
+                  className="text-indigo-600 focus:ring-indigo-500"
                 />
                 <span>PUNCH OUT (Check-Out)</span>
               </label>

@@ -409,7 +409,7 @@ export default function App() {
           {activeTab === 'attendance-summary' && <SummaryReportPage showToast={showToast} employees={sortedEmployees} />}
           {activeTab === 'attendance-sheet' && <AttendanceSheetPage showToast={showToast} employees={sortedEmployees} />}
           {activeTab === 'attendance-request' && <RequestAttendancePage showToast={showToast} employees={sortedEmployees} />}
-          {activeTab === 'occupancy' && <OccupancyPage showToast={showToast} />}
+          {activeTab === 'occupancy' && <OccupancyPage showToast={showToast} employees={sortedEmployees} />}
           {activeTab === 'reports' && <ReportsPage showToast={showToast} />}
           {activeTab === 'employees' && (
             <EmployeesPage 

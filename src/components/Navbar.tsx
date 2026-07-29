@@ -444,7 +444,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="User Profile"
           >
             {imageError ? (
-              <div className="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center text-indigo-650 dark:text-indigo-400 font-bold text-xs ring-2 ring-indigo-500/20 group-hover:ring-indigo-500/40 transition-all shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-xs ring-2 ring-indigo-500/20 group-hover:ring-indigo-500/40 transition-all shrink-0">
                 GML
               </div>
             ) : (
